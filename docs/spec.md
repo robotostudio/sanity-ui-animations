@@ -25,7 +25,9 @@ contracts named here.
 | Reference scene | `packages/ui-animations/src/fixtures/checkout.ts` | done |
 | `normalizeScene` | `packages/ui-animations/src/normalize.ts` | stub |
 | `validateScene` | `packages/ui-animations/src/validate.ts` | stub |
-| `compileSceneToReact` | `packages/ui-animations/src/compile.ts` | stub |
+| `compileSceneToReact` | `packages/ui-animations/src/compile.ts` | done |
+| `runGeneration` (Agent Actions pipeline) | `packages/ui-animations/src/pipeline.ts` | done (recorded fixtures only) |
+| `pnpm agent:live` | `scripts/agent-actions-live.ts` | done, not yet run (needs schema deploy) |
 | `animation`, `designTokens` schema | `apps/studio/schemaTypes/documents/` | done |
 | Generator input + preview | Studio custom input on `animation` | ticket |
 | Primitive library (React) | `packages/ui-animations` (new `./react` export) | ticket |
@@ -278,3 +280,18 @@ animations.
    the example or shorten the token projection.
 7. **Publishing reactCode.** Should the compiled code be exposed on the website
    (copy button), or kept Studio-only?
+
+- **Assumption (confirm with Jono):** a Good run that fails on call 2 keeps
+  call 1's normalised scene. Call 1 has to be written so the refine call can
+  read `$scene`, and it is a better scene than the old one. "Leaves the
+  previous scene in place" is read as "the last scene written".
+- **Assumption (confirm with Jono):** each call writes `scene` and `reactCode`
+  in one patch, and the `generationLog` entry goes in its own patch at the end
+  of every run. A failed run therefore still writes its log entry.
+- **Assumption (confirm with Jono):** when there is no draft, the run copies
+  the published animation into `drafts.<id>` with `createIfNotExists`, as the
+  Studio does on first edit.
+- **Assumption (confirm with Jono):** `compileSceneToReact` bakes the theme
+  colours and its own layout metrics (52px title bar, 44/64/40px rows, cards
+  and buttons) into the output. The emitted component needs only React, until
+  the primitive library can be published for it to import.
