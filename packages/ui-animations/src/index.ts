@@ -48,6 +48,14 @@ export {
   type WindowChromeTokens,
 } from "./tokens";
 export {
+  type DesignTokensRaw,
+  type ParsedTokens,
+  parseDesignTokens,
+  parseMarkdownTables,
+  type TokenSources,
+  toDesignTokensDocument,
+} from "./tokens-parse";
+export {
   type ScenePathSegment,
   type ValidationIssue,
   validateScene,

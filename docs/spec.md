@@ -30,7 +30,7 @@ contracts named here.
 | Generator input + preview | Studio custom input on `animation` | ticket |
 | Primitive library (React) | `packages/ui-animations` (new `./react` export) | ticket |
 | `/animations/[slug]` | `apps/web` | ticket |
-| `pnpm tokens:sync` | `scripts/tokens-sync.ts` | placeholder |
+| `pnpm tokens:sync` | `scripts/tokens-sync.ts`, parser in `packages/ui-animations/src/tokens-parse.ts` | done |
 
 ## User flow
 
@@ -278,3 +278,9 @@ animations.
    the example or shorten the token projection.
 7. **Publishing reactCode.** Should the compiled code be exposed on the website
    (copy button), or kept Studio-only?
+- **Assumption (confirm with Jono):** `tokens:sync` parses only the Roles,
+  Springs and Scene tokens tables and the Badges bullet. `tide`,
+  `windowChrome` and the traffic-light greys are written from
+  `DEFAULT_TOKENS` without a warning, and a failed fetch of either file
+  aborts the sync instead of writing defaults. A rerun against unchanged
+  files rewrites the same document; only `syncedAt` and `_rev` change.

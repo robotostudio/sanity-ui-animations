@@ -8,16 +8,20 @@
     "lint": "biome lint .",
     "format": "biome format --write .",
     "format:check": "biome format .",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@sanity-ui-animations/typescript-config": "workspace:*",
-    "typescript": "catalog:"
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "exports": {
     ".": "./src/index.ts",
     "./scene-spec": "./src/scene-spec.ts",
     "./tokens": "./src/tokens.ts",
-    "./fixtures/*": "./src/fixtures/*.ts"
+    "./fixtures/*": "./src/fixtures/*.ts",
+    "./tokens-parse": "./src/tokens-parse.ts"
   }
 }
