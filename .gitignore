@@ -48,3 +48,6 @@ npm-debug.log*
 !.env.example
 .shelve/
 # end shelve-managed-block
+
+# Live Agent Actions call counter (pnpm agent:live)
+.agent-actions-calls.json

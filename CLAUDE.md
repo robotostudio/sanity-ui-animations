@@ -39,6 +39,9 @@ pnpm type                      # Generate types from schema.json (root via turbo
 pnpm test             # Vitest unit tests (sanity-blocks, ui-animations)
 pnpm test:e2e         # Playwright smoke tests (apps/web, needs a running/deployed site)
 pnpm --filter web test:e2e:presentation  # Studio → website loop (Presentation drafts, publish, live update, no leaks); starts Studio on 3333 + `next build && next start` on 3000
+
+# One real Agent Actions run (spends AI credits; capped at 10 calls, see the script header)
+pnpm agent:live -- --id <animation-id> --mode fast|good --schema-deployed --confirm
 ```
 
 Note: `pnpm test` at the root is `turbo run test`, which reaches every package

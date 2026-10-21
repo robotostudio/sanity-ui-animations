@@ -1,6 +1,19 @@
 export { compileSceneToReact } from "./compile";
 export { normalizeScene } from "./normalize";
 export {
+  BUDGET_EXHAUSTED_MESSAGE,
+  DEFAULT_SCHEMA_ID,
+  GENERATION_CALLS,
+  type GenerationClient,
+  type GenerationLogEntry,
+  type GenerationMode,
+  type GenerationPatch,
+  type GenerationProgress,
+  type GenerationResult,
+  type RunGenerationOptions,
+  runGeneration,
+} from "./pipeline";
+export {
   type SceneValidationMarker,
   sceneValidation,
   toScenePatch,
