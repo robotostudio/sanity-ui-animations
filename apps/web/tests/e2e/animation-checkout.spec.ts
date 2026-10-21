@@ -45,7 +45,12 @@ test.describe("Animation: checkout flow", () => {
     await expect(page).toHaveTitle(/Checkout flow/);
   });
 
-  test("is listed on the animations index", async ({ page }) => {
+  test("is listed on the animations index", async ({ page, request }) => {
+    const seeded = await request.get(PATH);
+    test.skip(
+      seeded.status() === 404,
+      `${PATH} is not published here; run \`pnpm seed:checkout\` first`
+    );
     await page.goto("/animations");
 
     await expect(

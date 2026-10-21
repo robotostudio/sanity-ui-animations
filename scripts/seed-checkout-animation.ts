@@ -1,7 +1,7 @@
 /**
  * `pnpm seed:checkout`
  *
- * Writes the published checkout `animation` (`_id: "animation-checkout"`,
+ * Writes, to the `development` dataset only, the published checkout `animation` (`_id: "animation-checkout"`,
  * served at `/animations/checkout-flow`) with `createOrReplace`, so the
  * website e2e spec has a scene to render. Reruns are idempotent. It makes no
  * Agent Actions calls and does not need the schema deployed: the document is
@@ -39,6 +39,13 @@ async function main() {
   if (!(projectId && dataset && token)) {
     fail(
       "Set SANITY_UI_ANIMATIONS_PROJECT_ID, _DATASET and _WRITE_TOKEN in the root .env.local."
+    );
+  }
+
+  // The e2e fixture belongs in the development dataset only.
+  if (dataset !== "development") {
+    fail(
+      `Refusing to seed dataset "${dataset}"; set SANITY_UI_ANIMATIONS_DATASET=development.`
     );
   }
 

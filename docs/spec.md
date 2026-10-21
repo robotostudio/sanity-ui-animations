@@ -336,6 +336,7 @@ animations.
 - **Assumption (confirm with Jono):** `pnpm seed:checkout` publishes the
   reference checkout scene as `animation-checkout` at
   `/animations/checkout-flow`, with `reactCode` compiled from it, so the web
-  e2e can prove compiled code never reaches the page. It refuses to run if
-  another published animation already owns the slug. The web spec skips,
+  e2e can prove compiled code never reaches the page. It writes only to the
+  `development` dataset, and refuses if another published animation already
+  owns the slug. The web spec skips,
   rather than fails, against a dataset that was never seeded.

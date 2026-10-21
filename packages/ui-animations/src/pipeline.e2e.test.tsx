@@ -120,6 +120,13 @@ const errorsIn = (scene: SceneSpec | SceneSpecDraft) =>
     .filter((issue) => issue.severity === "error")
     .map((issue) => issue.code);
 
+/** Ids of the elements carrying the Tide accent. */
+const accentedIds = (scene: SceneSpec) =>
+  scene.windows
+    .flatMap((window) => window.elements)
+    .filter((element) => element.accent)
+    .map((element) => element.id);
+
 /** The `{ scene, reactCode }` sets, in write order. */
 const sceneWrites = (patches: Patch[]) =>
   patches.flatMap((patch) =>
@@ -250,16 +257,18 @@ describe("checkout pipeline, Fast", () => {
     expect(errorsIn(scene)).toEqual([]);
     // What normalisation fixed: one Tide accent, an in-range glide, and the
     // update aimed at the missing `row-shipping` row dropped.
-    const accented = scene.windows
-      .flatMap((window) => window.elements)
-      .filter((element) => element.accent)
-      .map((element) => element.id);
-    expect(accented).toEqual(["row-total"]);
+    expect(accentedIds(scene)).toEqual(["row-total"]);
     expect(scene.steps.map((step) => step.target)).not.toContain(
       "row-shipping"
     );
-    const glide = scene.steps.find((step) => step._key === "a02");
-    expect(glide?.durationMs).toBeLessThanOrEqual(1750);
+    // The recorded 2400ms glide is the one with an explicit duration.
+    const timedGlides = scene.steps.filter(
+      (step) => step.role === "glide" && step.durationMs !== undefined
+    );
+    expect(timedGlides.length).toBeGreaterThan(0);
+    for (const glide of timedGlides) {
+      expect(glide.durationMs).toBeLessThanOrEqual(1750);
+    }
   });
 
   it("writes the normalised scene and inert compiled code in one patch", async () => {
@@ -320,11 +329,7 @@ describe("checkout pipeline, Good", () => {
     expect(writes).toHaveLength(2);
     expect(writes[1]).toEqual({ scene, reactCode });
     // The refine pass moved Tide back to the button and gave the cursor a start.
-    const accented = scene.windows
-      .flatMap((window) => window.elements)
-      .filter((element) => element.accent)
-      .map((element) => element.id);
-    expect(accented).toEqual(["btn-apply"]);
+    expect(accentedIds(scene)).toEqual(["btn-apply"]);
     expect(scene.cursor?.start).toEqual({ x: 560, y: 120 });
     expectInert(reactCode, scene);
   });
