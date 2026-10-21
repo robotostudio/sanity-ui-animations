@@ -29,7 +29,7 @@ contracts named here.
 | `runGeneration` (Agent Actions pipeline) | `packages/ui-animations/src/pipeline.ts` | done (recorded fixtures only) |
 | `pnpm agent:live` | `scripts/agent-actions-live.ts` | done, not yet run (needs schema deploy) |
 | `animation`, `designTokens` schema | `apps/studio/schemaTypes/documents/` | done |
-| Generator input + preview | Studio custom input on `animation` | ticket |
+| Generator input + preview | `apps/studio/components/animation-generator/` | done |
 | Primitive library (React) | `packages/ui-animations/src/react` (`./react` export) | done |
 | `/animations/[slug]` | `apps/web` | ticket |
 | `pnpm tokens:sync` | `scripts/tokens-sync.ts` | placeholder |
@@ -322,3 +322,17 @@ animations.
   colours and its own layout metrics (52px title bar, 44/64/40px rows, cards
   and buttons) into the output. The emitted component needs only React, until
   the primitive library can be published for it to import.
+- **Assumption (confirm with Jono):** anyone who can edit an animation can
+  generate. The Studio already makes the form read-only for users without
+  update access, and that disables Generate; there is no extra role check.
+- **Assumption (confirm with Jono):** Generate sits under the Mode radio
+  (directly below the prompt) and stays disabled until the prompt has text.
+  A run makes every field read-only, not only the generator's own controls.
+- **Assumption (confirm with Jono):** the Studio preview renders a normalised
+  copy of the stored scene, so a half-edited scene still draws, while the
+  issues beside it come from `validateScene` on the stored value, matching
+  the field's validation.
+- **Assumption (confirm with Jono):** the optional Code preview tab loads
+  Babel standalone (unpkg) and React 19.2 (esm.sh) into its sandboxed frame,
+  so it needs network access to those CDNs. The frame mounts only while the
+  tab is open.
