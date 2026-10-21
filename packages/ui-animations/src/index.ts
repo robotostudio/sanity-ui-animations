@@ -48,10 +48,10 @@ export {
   type WindowChromeTokens,
 } from "./tokens";
 export {
+  type DesignTokensDocument,
   type DesignTokensRaw,
   type ParsedTokens,
   parseDesignTokens,
-  parseMarkdownTables,
   type TokenSources,
   toDesignTokensDocument,
 } from "./tokens-parse";

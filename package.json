@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
+    "@sanity-ui-animations/logger": "workspace:*",
     "@sanity-ui-animations/typescript-config": "workspace:*",
     "@sanity-ui-animations/ui-animations": "workspace:*",
     "@sanity/client": "catalog:",

@@ -95,7 +95,7 @@ describe("parseDesignTokens", () => {
       "roles.press.scaleFrom: not found in the Roles table, using the default"
     );
     expect(warnings).toContain(
-      "roles.glide: row missing from the Roles table, using the default"
+      "roles.glide.duration: row missing from the Roles table, using the default"
     );
   });
 
@@ -152,7 +152,7 @@ describe("parseDesignTokens", () => {
       'springs.snap.config: could not read "{ type: "spring", stiffness: 1 }", using the default'
     );
     expect(warnings).toContain(
-      "springs.track: row missing from the Springs table, using the default"
+      "springs.track.config: row missing from the Springs table, using the default"
     );
   });
 
@@ -257,19 +257,42 @@ describe("parseDesignTokens", () => {
     );
   });
 
-  it("keeps every badge default when there is no Badges bullet", () => {
+  it("warns once per value when every source is missing", () => {
     const { tokens, warnings } = parseDesignTokens(
       { designMd: "", motionMd: "" },
       DEFAULT_TOKENS
     );
 
     expect(tokens).toEqual(DEFAULT_TOKENS);
-    expect(warnings).toEqual([
-      "roles: no table headed Role / Use / Curve / Duration, using the default",
-      "springs: no table headed Spring / Use / Motion config, using the default",
-      "scene: no table headed Token / Light / Dark, using the default",
-      'badges: no "Badges" bullet, using the default',
-    ]);
+    // 29 role values, 6 spring values, 14 scene colours, 9 badge values.
+    expect(warnings).toHaveLength(58);
+    expect(warnings).toEqual(
+      expect.arrayContaining([
+        "roles.reveal.maxItems: no table headed Role / Use / Curve / Duration, using the default",
+        "springs.pop.config: no table headed Spring / Use / Motion config, using the default",
+        "scene.dark.tide: no table headed Token / Light / Dark, using the default",
+        'badges.colors.info: no "Badges" bullet, using the default',
+      ])
+    );
+  });
+
+  it("reads tables with short delimiters and escaped pipes", () => {
+    const motionMd = [
+      "| Spring | Use | Motion config |",
+      "|-|:-:|--|",
+      '| SNAP | snap \\| settle | `{ type: "spring", duration: 0.5, bounce: 0.1 }` |',
+    ].join("\n");
+
+    const { tokens } = parseDesignTokens(
+      { designMd: "", motionMd },
+      DEFAULT_TOKENS
+    );
+
+    expect(tokens.springs[0]).toEqual({
+      name: "snap",
+      use: "snap | settle",
+      config: { type: "spring", duration: 0.5, bounce: 0.1 },
+    });
   });
 });
 

@@ -40,19 +40,20 @@ const normalise = (text: string) => text.trim().toLowerCase();
 /** Drop inline-code backticks and surrounding whitespace from a cell. */
 const plain = (cell: string) => cell.replaceAll("`", "").trim();
 
+/** Cells of one table row; `\\|` is a literal pipe inside a cell. */
 const splitRow = (line: string) =>
   line
     .trim()
     .replace(/^\|/, "")
-    .replace(/\|$/, "")
-    .split("|")
-    .map((cell) => cell.trim());
+    .replace(/(?<!\\)\|$/, "")
+    .split(/(?<!\\)\|/)
+    .map((cell) => cell.replaceAll("\\|", "|").trim());
 
 const isDelimiterRow = (line: string) =>
-  /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?$/.test(line.trim());
+  /^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?$/.test(line.trim());
 
 /** Every GitHub-flavoured Markdown table in `markdown`, in document order. */
-export function parseMarkdownTables(markdown: string): Table[] {
+function parseMarkdownTables(markdown: string): Table[] {
   const lines = markdown.split(/\r?\n/);
   const tables: Table[] = [];
   for (let index = 0; index < lines.length - 1; index += 1) {
@@ -88,9 +89,9 @@ function findTable(tables: Table[], headers: string[]): Table | undefined {
 }
 
 const rowFor = (table: Table | undefined, column: string, name: string) =>
-  table?.rows.find((row) => normalise(plain(row[column] ?? "")) === name);
-
-type Warn = (path: string, reason: string) => void;
+  table?.rows.find(
+    (row) => normalise(plain(row[column] ?? "")) === normalise(name)
+  );
 
 function parseCurve(
   cell: string
@@ -142,73 +143,102 @@ const numberIn = (text: string, pattern: RegExp) => {
   return match?.[1] === undefined ? undefined : Number(match[1]);
 };
 
-type RoleExtras = Pick<
-  MotionRoleToken,
-  "staggerMs" | "risePx" | "maxItems" | "scaleFrom"
->;
+type Warn = (path: string, reason: string) => void;
 
 /**
- * Stagger, rise, item cap and starting scale, written in prose inside the
- * Duration and Use cells. Only roles whose default has one must state it.
+ * Where a value is read from: the text of its cell (or bullet), or why there
+ * is none, e.g. "row missing from the Roles table".
  */
-function parseRoleExtras(
-  fallback: MotionRoleToken,
-  row: Record<string, string>,
-  warn: Warn
-): RoleExtras {
-  const duration = row.duration ?? "";
-  const found: RoleExtras = {
-    staggerMs: numberIn(duration, /(\d+)ms stagger/),
-    risePx: numberIn(duration, /(\d+)px rise/),
-    maxItems: numberIn(duration, /at most (\d+) items/),
-    scaleFrom: numberIn(plain(row.use ?? ""), /scale(?: from)? (\d*\.?\d+)/),
-  };
-  const extras: RoleExtras = {};
-  for (const key of Object.keys(found) as (keyof RoleExtras)[]) {
-    const value = found[key] ?? fallback[key];
-    if (found[key] === undefined && value !== undefined) {
-      warn(`roles.${fallback.role}.${key}`, "not found in the Roles table");
-    }
-    if (value !== undefined) {
-      extras[key] = value;
-    }
+type Source = { text: string } | { missing: string };
+
+const cellOf = (
+  row: Record<string, string> | undefined,
+  column: string,
+  missing: string
+): Source => (row ? { text: row[column] ?? "" } : { missing });
+
+/**
+ * One value: parsed from `source`, or `fallback` with a warning naming
+ * `path`. A value with no fallback is optional and is dropped silently.
+ */
+function readValue<T>(
+  warn: Warn,
+  path: string,
+  source: Source,
+  parse: (text: string) => T | undefined,
+  fallback: T | undefined,
+  unreadable = (text: string) => `could not read "${plain(text)}"`
+): T | undefined {
+  const value = "text" in source ? parse(source.text) : undefined;
+  if (value !== undefined || fallback === undefined) {
+    return value;
   }
-  return extras;
+  warn(path, "text" in source ? unreadable(source.text) : source.missing);
+  return fallback;
 }
+
+const nonEmpty = (text: string) => plain(text) || undefined;
+
+const ROLE_EXTRAS = {
+  staggerMs: ["duration", /(\d+)ms stagger/],
+  risePx: ["duration", /(\d+)px rise/],
+  maxItems: ["duration", /at most (\d+) items/],
+  scaleFrom: ["use", /scale(?: from)? (\d*\.?\d+)/],
+} as const satisfies Record<string, readonly [string, RegExp]>;
+
+type RoleExtras = Pick<MotionRoleToken, keyof typeof ROLE_EXTRAS>;
 
 function parseRole(
   fallback: MotionRoleToken,
   row: Record<string, string> | undefined,
+  missing: string,
   warn: Warn
 ): MotionRoleToken {
   const path = `roles.${fallback.role}`;
-  if (!row) {
-    warn(path, "row missing from the Roles table");
-    return fallback;
-  }
+  const cell = (column: string) => cellOf(row, column, missing);
 
-  const use = plain(row.use ?? "");
-  if (!use) {
-    warn(`${path}.use`, "empty");
-  }
-
-  const curve = parseCurve(row.curve ?? "");
-  if (!curve) {
-    warn(`${path}.curve`, `could not read "${plain(row.curve ?? "")}"`);
-  }
-
-  // `sweep` has no duration by design, so an empty reading is not a fallback.
-  const duration = parseDuration(row.duration ?? "");
-  if (!duration && fallback.duration) {
-    warn(`${path}.duration`, `could not read "${plain(row.duration ?? "")}"`);
+  const curve = readValue(
+    warn,
+    `${path}.curve`,
+    cell("curve"),
+    parseCurve,
+    fallback
+  );
+  const extras: RoleExtras = {};
+  for (const [key, [column, pattern]] of Object.entries(ROLE_EXTRAS) as [
+    keyof RoleExtras,
+    (typeof ROLE_EXTRAS)[keyof RoleExtras],
+  ][]) {
+    const value = readValue(
+      warn,
+      `${path}.${key}`,
+      cell(column),
+      (text) => numberIn(plain(text), pattern),
+      fallback[key],
+      () => "not found in the Roles table"
+    );
+    if (value !== undefined) {
+      extras[key] = value;
+    }
   }
 
   return {
     role: fallback.role,
-    use: use || fallback.use,
-    ...(curve ?? { easing: fallback.easing, css: fallback.css }),
-    duration: duration ?? fallback.duration,
-    ...parseRoleExtras(fallback, row, warn),
+    use:
+      readValue(warn, `${path}.use`, cell("use"), nonEmpty, fallback.use) ??
+      fallback.use,
+    easing: curve?.easing ?? fallback.easing,
+    css: curve?.css ?? fallback.css,
+    // `sweep` has no duration by design (null), so nothing to fall back to.
+    duration:
+      readValue(
+        warn,
+        `${path}.duration`,
+        cell("duration"),
+        (text) => parseDuration(text) ?? undefined,
+        fallback.duration ?? undefined
+      ) ?? null,
+    ...extras,
   };
 }
 
@@ -237,26 +267,28 @@ function parseSpringConfig(cell: string): SpringConfig | undefined {
 function parseSpring(
   fallback: SpringToken,
   row: Record<string, string> | undefined,
+  missing: string,
   warn: Warn
 ): SpringToken {
   const path = `springs.${fallback.name}`;
-  if (!row) {
-    warn(path, "row missing from the Springs table");
-    return fallback;
-  }
-  const use = plain(row.use ?? "");
-  if (!use) {
-    warn(`${path}.use`, "empty");
-  }
-  const cell = row["motion config"] ?? "";
-  const config = parseSpringConfig(cell);
-  if (!config) {
-    warn(`${path}.config`, `could not read "${plain(cell)}"`);
-  }
   return {
     name: fallback.name,
-    use: use || fallback.use,
-    config: config ?? fallback.config,
+    use:
+      readValue(
+        warn,
+        `${path}.use`,
+        cellOf(row, "use", missing),
+        nonEmpty,
+        fallback.use
+      ) ?? fallback.use,
+    config:
+      readValue(
+        warn,
+        `${path}.config`,
+        cellOf(row, "motion config", missing),
+        parseSpringConfig,
+        fallback.config
+      ) ?? fallback.config,
   };
 }
 
@@ -268,6 +300,20 @@ const hexes = (cell: string) => plain(cell).match(HEX) ?? [];
 const singleHex = (cell: string) => {
   const found = hexes(cell);
   return found.length === 1 && found[0] === plain(cell) ? found[0] : undefined;
+};
+
+const groundTones = (cell: string) => {
+  const found = hexes(cell);
+  return found.length === 5
+    ? (found as SceneThemeTokens["groundTones"])
+    : undefined;
+};
+
+const glassFill = (cell: string) => {
+  const match = plain(cell).match(/^(#[0-9a-f]{6}) at (\d+(?:\.\d+)?)%$/i);
+  return match?.[1] && match[2]
+    ? { color: match[1], opacity: Number(match[2]) / 100 }
+    : undefined;
 };
 
 type SceneColour = Exclude<
@@ -287,77 +333,53 @@ const SCENE_COLOURS: Record<string, SceneColour> = {
 function parseSceneTheme(
   theme: SceneTheme,
   fallback: SceneThemeTokens,
-  table: Table,
+  table: Table | undefined,
+  missingTable: string,
   warn: Warn
 ): SceneThemeTokens {
-  const result: SceneThemeTokens = { ...fallback };
-  const cell = (token: string) => {
-    const row = rowFor(table, "token", token);
-    if (!row) {
-      return;
-    }
-    return row[theme] ?? "";
-  };
   const read = <T>(
     key: keyof SceneThemeTokens,
     token: string,
     parse: (text: string) => T | undefined,
-    assign: (value: T) => void
+    otherwise: T
   ) => {
-    const path = `scene.${theme}.${key}`;
-    const text = cell(token);
-    if (text === undefined) {
-      warn(path, "row missing from the Scene tokens table");
-      return;
-    }
-    const value = parse(text);
-    if (value === undefined) {
-      warn(path, `could not read "${plain(text)}"`);
-      return;
-    }
-    assign(value);
+    const source: Source = table
+      ? cellOf(
+          rowFor(table, "token", token),
+          theme,
+          "row missing from the Scene tokens table"
+        )
+      : { missing: missingTable };
+    return (
+      readValue(warn, `scene.${theme}.${key}`, source, parse, otherwise) ??
+      otherwise
+    );
   };
 
-  read(
-    "groundTones",
-    "ground tones",
-    (text) => {
-      const found = hexes(text);
-      return found.length === 5
-        ? (found as SceneThemeTokens["groundTones"])
-        : undefined;
-    },
-    (value) => {
-      result.groundTones = value;
-    }
-  );
-  read(
-    "glassFill",
-    "glass fill",
-    (text) => {
-      const match = plain(text).match(/^(#[0-9a-f]{6}) at (\d+(?:\.\d+)?)%$/i);
-      return match?.[1] && match[2]
-        ? { color: match[1], opacity: Number(match[2]) / 100 }
-        : undefined;
-    },
-    (value) => {
-      result.glassFill = value;
-    }
-  );
+  const result: SceneThemeTokens = {
+    ...fallback,
+    groundTones: read(
+      "groundTones",
+      "ground tones",
+      groundTones,
+      fallback.groundTones
+    ),
+    glassFill: read("glassFill", "glass fill", glassFill, fallback.glassFill),
+  };
   for (const [token, key] of Object.entries(SCENE_COLOURS)) {
-    read(key, token, singleHex, (value) => {
-      result[key] = value;
-    });
+    result[key] = read(key, token, singleHex, fallback[key]);
   }
   return result;
 }
 
 /** The text of the bullet that opens with `**Badges**`, backticks removed. */
-function badgesBullet(markdown: string): string | undefined {
+function badgesBullet(markdown: string): Source {
   const line = markdown
     .split(/\r?\n/)
     .find((entry) => /^\s*[-*]\s+\*\*Badges\*\*/i.test(entry));
-  return line === undefined ? undefined : plain(line);
+  return line === undefined
+    ? { missing: 'no "Badges" bullet' }
+    : { text: plain(line) };
 }
 
 function parseBadges(
@@ -365,52 +387,51 @@ function parseBadges(
   markdown: string,
   warn: Warn
 ): BadgeTokens {
-  const text = badgesBullet(markdown);
-  if (text === undefined) {
-    warn("badges", 'no "Badges" bullet');
-    return fallback;
-  }
-  const found = <T>(path: string, value: T | undefined, otherwise: T): T => {
-    if (value === undefined) {
-      warn(`badges.${path}`, "not found in the Badges bullet");
-      return otherwise;
-    }
-    return value;
-  };
-  const hexAfter = (pattern: string) =>
+  const bullet = badgesBullet(markdown);
+  const read = <T>(
+    path: string,
+    parse: (text: string) => T | undefined,
+    otherwise: T
+  ) =>
+    readValue(
+      warn,
+      `badges.${path}`,
+      bullet,
+      parse,
+      otherwise,
+      () => "not found in the Badges bullet"
+    ) ?? otherwise;
+  const hexAfter = (pattern: string) => (text: string) =>
     text.match(new RegExp(`${pattern}\\s*(#[0-9a-f]{6})\\b`, "i"))?.[1];
-  const percent = numberIn(text, /(\d+(?:\.\d+)?)% fill/);
+  const number = (pattern: RegExp) => (text: string) => numberIn(text, pattern);
 
   const colors = { ...fallback.colors };
   for (const status of Object.keys(colors) as (keyof typeof colors)[]) {
-    colors[status] = found(
+    colors[status] = read(
       `colors.${status}`,
       hexAfter(`\\b${status}`),
       colors[status]
     );
   }
+  const percent = read(
+    "fillOpacity",
+    number(/(\d+(?:\.\d+)?)% fill/),
+    fallback.fillOpacity * 100
+  );
   return {
-    heightPx: found(
-      "heightPx",
-      numberIn(text, /(\d+)px tall/),
-      fallback.heightPx
-    ),
-    dotPx: found("dotPx", numberIn(text, /(\d+)px dot/), fallback.dotPx),
-    fillOpacity: found(
-      "fillOpacity",
-      percent === undefined ? undefined : percent / 100,
-      fallback.fillOpacity
-    ),
+    heightPx: read("heightPx", number(/(\d+)px tall/), fallback.heightPx),
+    dotPx: read("dotPx", number(/(\d+)px dot/), fallback.dotPx),
+    fillOpacity: percent / 100,
     colors,
     neutral: {
-      fill: found(
+      fill: read(
         "neutral.fill",
         hexAfter("neutral badge is"),
         fallback.neutral.fill
       ),
-      border: found(
+      border: read(
         "neutral.border",
-        text.match(/(#[0-9a-f]{6}) border/i)?.[1],
+        (text) => text.match(/(#[0-9a-f]{6}) border/i)?.[1],
         fallback.neutral.border
       ),
     },
@@ -419,7 +440,7 @@ function parseBadges(
 
 /**
  * Parse both guideline files into `DesignTokens`. Never throws: anything it
- * cannot read comes from `defaults`, with a warning naming the value.
+ * cannot read comes from `defaults`, with one warning per value.
  */
 export function parseDesignTokens(
   sources: TokenSources,
@@ -435,41 +456,56 @@ export function parseDesignTokens(
     ...parseMarkdownTables(sources.motionMd),
     ...parseMarkdownTables(sources.designMd),
   ];
+  /** The row named `name`, or why there is none. */
+  const lookup = (headers: string[], tableName: string) => {
+    const table = findTable(tables, headers);
+    const missing = table
+      ? `row missing from the ${tableName} table`
+      : `no table headed ${headers.join(" / ")}`;
+    return {
+      table,
+      missing,
+      row: (column: string, name: string) => rowFor(table, column, name),
+    };
+  };
 
-  const rolesTable = findTable(tables, ["Role", "Use", "Curve", "Duration"]);
-  if (!rolesTable) {
-    warn("roles", "no table headed Role / Use / Curve / Duration");
-  }
+  const rolesTable = lookup(["Role", "Use", "Curve", "Duration"], "Roles");
   const roles = defaults.roles.map((fallback) =>
-    rolesTable
-      ? parseRole(fallback, rowFor(rolesTable, "role", fallback.role), warn)
-      : fallback
+    parseRole(
+      fallback,
+      rolesTable.row("role", fallback.role),
+      rolesTable.missing,
+      warn
+    )
   );
 
-  const springsTable = findTable(tables, ["Spring", "Use", "Motion config"]);
-  if (!springsTable) {
-    warn("springs", "no table headed Spring / Use / Motion config");
-  }
+  const springsTable = lookup(["Spring", "Use", "Motion config"], "Springs");
   const springs = defaults.springs.map((fallback) =>
-    springsTable
-      ? parseSpring(
-          fallback,
-          rowFor(springsTable, "spring", fallback.name),
-          warn
-        )
-      : fallback
+    parseSpring(
+      fallback,
+      springsTable.row("spring", fallback.name),
+      springsTable.missing,
+      warn
+    )
   );
 
-  const sceneTable = findTable(tables, ["Token", "Light", "Dark"]);
-  if (!sceneTable) {
-    warn("scene", "no table headed Token / Light / Dark");
-  }
-  const scene = sceneTable
-    ? {
-        light: parseSceneTheme("light", defaults.scene.light, sceneTable, warn),
-        dark: parseSceneTheme("dark", defaults.scene.dark, sceneTable, warn),
-      }
-    : defaults.scene;
+  const sceneTable = lookup(["Token", "Light", "Dark"], "Scene tokens");
+  const scene = {
+    light: parseSceneTheme(
+      "light",
+      defaults.scene.light,
+      sceneTable.table,
+      sceneTable.missing,
+      warn
+    ),
+    dark: parseSceneTheme(
+      "dark",
+      defaults.scene.dark,
+      sceneTable.table,
+      sceneTable.missing,
+      warn
+    ),
+  };
 
   const badges = parseBadges(
     defaults.badges,
@@ -490,7 +526,78 @@ export type DesignTokensRaw = {
   syncedAt: string;
 };
 
-const sceneThemeFields = (theme: SceneThemeTokens) => ({
+type SceneThemeFields = {
+  groundTones: string[];
+  glassFill: string;
+  glassOpacity: number;
+  card: string;
+  hairline: string;
+  text: string;
+  secondaryText: string;
+  tide: string;
+  trafficLightActive: string;
+  trafficLightInactive: string;
+};
+
+/**
+ * The `designTokens` document, field for field as declared in
+ * `apps/studio/schemaTypes/documents/design-tokens.ts`. Keep the two in step.
+ */
+export type DesignTokensDocument = {
+  _id: "designTokens";
+  _type: "designTokens";
+  designMdUrl: string;
+  motionMdUrl: string;
+  syncedAt: string;
+  roles: ({
+    _key: string;
+    _type: "motionRole";
+    role: MotionRoleToken["role"];
+    use: string;
+    curve: string;
+    minMs?: number;
+    maxMs?: number;
+  } & Pick<
+    MotionRoleToken,
+    "staggerMs" | "scaleFrom" | "risePx" | "maxItems"
+  >)[];
+  springs: {
+    _key: string;
+    _type: "spring";
+    name: SpringToken["name"];
+    use: string;
+    duration?: number;
+    bounce?: number;
+    stiffness?: number;
+    damping?: number;
+    mass?: number;
+  }[];
+  sceneTokens: Record<SceneTheme, SceneThemeFields>;
+  badges: {
+    heightPx: number;
+    dotPx: number;
+    fillOpacity: number;
+    success: string;
+    warning: string;
+    error: string;
+    info: string;
+    neutralFill: string;
+    neutralBorder: string;
+  };
+  tide: { color: string; textColor: string; maxPerScene: number };
+  windowChrome: {
+    cornerRadiusPx: number;
+    backdropBlurPx: number;
+    topEdgePx: number;
+    trafficLightDiameterPx: number;
+    trafficLightGapPx: number;
+    trafficLightInsetPx: number;
+  };
+  rawDesignMd: string;
+  rawMotionMd: string;
+};
+
+const sceneThemeFields = (theme: SceneThemeTokens): SceneThemeFields => ({
   groundTones: [...theme.groundTones],
   glassFill: theme.glassFill.color,
   glassOpacity: theme.glassFill.opacity,
@@ -504,15 +611,14 @@ const sceneThemeFields = (theme: SceneThemeTokens) => ({
 });
 
 /**
- * The `designTokens` singleton as `pnpm tokens:sync` writes it, in the field
- * shape of `apps/studio/schemaTypes/documents/design-tokens.ts`. Array keys
+ * The `designTokens` singleton as `pnpm tokens:sync` writes it. Array keys
  * are the role and spring names, so reruns write identical keys.
  */
 export function toDesignTokensDocument(
   tokens: DesignTokens,
   raw: DesignTokensRaw
-) {
-  const { badges, windowChrome } = tokens;
+): DesignTokensDocument {
+  const { badges, tide, windowChrome } = tokens;
   return {
     _id: "designTokens",
     _type: "designTokens",
@@ -546,7 +652,11 @@ export function toDesignTokensDocument(
       neutralFill: badges.neutral.fill,
       neutralBorder: badges.neutral.border,
     },
-    tide: { ...tokens.tide },
+    tide: {
+      color: tide.color,
+      textColor: tide.textColor,
+      maxPerScene: tide.maxPerScene,
+    },
     windowChrome: {
       cornerRadiusPx: windowChrome.cornerRadiusPx,
       backdropBlurPx: windowChrome.backdropBlurPx,

@@ -24,6 +24,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { createClient } from "@sanity/client";
+import { Logger } from "@sanity-ui-animations/logger";
 import { DEFAULT_TOKENS } from "@sanity-ui-animations/ui-animations/tokens";
 import {
   parseDesignTokens,
@@ -38,8 +39,7 @@ const { values: flags } = parseArgs({
   options: { "dry-run": { type: "boolean", default: false } },
 });
 
-const out = (line: string) => process.stdout.write(`${line}\n`);
-const err = (line: string) => process.stderr.write(`${line}\n`);
+const logger = new Logger("tokens:sync");
 
 async function fetchText(url: string): Promise<string> {
   const response = await fetch(url, { headers: { accept: "text/markdown" } });
@@ -87,7 +87,7 @@ async function main() {
     DEFAULT_TOKENS
   );
   for (const warning of warnings) {
-    err(`warning: ${warning}`);
+    logger.warn(warning);
   }
 
   const document = toDesignTokensDocument(tokens, {
@@ -97,8 +97,8 @@ async function main() {
   });
 
   if (flags["dry-run"]) {
-    out(
-      JSON.stringify(
+    process.stdout.write(
+      `${JSON.stringify(
         {
           ...document,
           rawDesignMd: `<${designMd.length} chars>`,
@@ -106,9 +106,9 @@ async function main() {
         },
         null,
         2
-      )
+      )}\n`
     );
-    out(`tokens:sync: dry run, ${warnings.length} warning(s), nothing written`);
+    logger.info(`dry run, ${warnings.length} warning(s), nothing written`);
     return;
   }
 
@@ -119,12 +119,12 @@ async function main() {
     useCdn: false,
   });
   const written = await client.createOrReplace(document);
-  out(
-    `tokens:sync: wrote ${written._id} (rev ${written._rev}) to ${env.dataset}, ${warnings.length} warning(s)`
+  logger.info(
+    `wrote ${written._id} (rev ${written._rev}) to ${env.dataset}, ${warnings.length} warning(s)`
   );
 }
 
 main().catch((error: unknown) => {
-  err(`tokens:sync: ${error instanceof Error ? error.message : String(error)}`);
+  logger.error(error instanceof Error ? error.message : String(error));
   process.exitCode = 1;
 });

@@ -83,6 +83,9 @@ importers:
       '@biomejs/biome':
         specifier: 2.5.14
         version: 2.5.14
+      '@sanity-ui-animations/logger':
+        specifier: workspace:*
+        version: link:packages/logger
       '@sanity-ui-animations/typescript-config':
         specifier: workspace:*
         version: link:packages/typescript-config
