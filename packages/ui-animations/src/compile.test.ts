@@ -107,6 +107,14 @@ describe("compileSceneToReact", () => {
     expect(code).not.toContain("\u2028");
   });
 
+  it("leaves data that looks like a template placeholder alone", () => {
+    const code = compileSceneToReact(withLabels("__THEME__ __SCENE__"));
+
+    expect(syntaxErrors(code)).toEqual([]);
+    expect(stringLiterals(code)).toContain("__THEME__ __SCENE__");
+    expect(code).toMatch(/const THEME = \{/);
+  });
+
   it("escapes design-token strings too, since they come from the dataset", () => {
     const payload = '"});alert(1)//</script>';
     const code = compileSceneToReact(checkoutScene, {

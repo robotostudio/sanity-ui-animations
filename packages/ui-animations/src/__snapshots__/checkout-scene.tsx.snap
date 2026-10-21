@@ -14,6 +14,7 @@ type Scene = {
   mode: string;
   label: string;
   size: number;
+  titleBar: number;
   windows: {
     id: string;
     title: string;
@@ -62,6 +63,7 @@ const SCENE: Scene = {
   "mode": "intro",
   "label": "A shopper applies a 10% discount code in their cart, the total drops from $150 to $135, and the payment is marked paid.",
   "size": 640,
+  "titleBar": 52,
   "windows": [
     {
       "id": "cart",
@@ -353,7 +355,7 @@ const THEME = {
   "trafficInactive": "#D2D1CB",
   "radius": 16,
   "blur": 22,
-  "light": 12,
+  "lightDiameter": 12,
   "lightGap": 8,
   "lightInset": 20,
   "badgeHeight": 28,
@@ -471,6 +473,9 @@ export default function SceneAnimation() {
     }
     const timers: number[] = [];
     const play = () => {
+      for (const timer of timers.splice(0)) {
+        window.clearTimeout(timer);
+      }
       setLanded(0);
       SCENE.steps.forEach((step, index) => {
         timers.push(window.setTimeout(() => setLanded(index + 1), step.at));
@@ -560,7 +565,7 @@ export default function SceneAnimation() {
                 alignItems: "center",
                 display: "flex",
                 gap: THEME.lightGap,
-                height: 52,
+                height: SCENE.titleBar,
                 paddingLeft: THEME.lightInset,
               }}
             >
@@ -572,8 +577,8 @@ export default function SceneAnimation() {
                       ? THEME.trafficActive
                       : THEME.trafficInactive,
                     borderRadius: 999,
-                    height: THEME.light,
-                    width: THEME.light,
+                    height: THEME.lightDiameter,
+                    width: THEME.lightDiameter,
                   }}
                 />
               ))}

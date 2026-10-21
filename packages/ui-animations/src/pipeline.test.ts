@@ -342,6 +342,33 @@ describe("runGeneration", () => {
   });
 });
 
+describe("runGeneration when the log cannot be written", () => {
+  it("still resolves with the run's outcome and says the log was lost", async () => {
+    const { client } = fakeClient([generateCheckoutResponse]);
+    const patch = client.patch;
+    let writes = 0;
+    client.patch = (id) => {
+      const builder = patch(id);
+      const commit = builder.commit;
+      builder.commit = () => {
+        writes += 1;
+        return writes === 2
+          ? Promise.reject(new Error("Mutation failed"))
+          : commit();
+      };
+      return builder;
+    };
+
+    const result = await run(client, "fast");
+
+    expect(result).toMatchObject({
+      status: "success",
+      calls: 1,
+      logError: "Mutation failed",
+    });
+  });
+});
+
 describe("GENERATION_CALLS", () => {
   it("bills Fast one credit and Good two", () => {
     expect(GENERATION_CALLS).toEqual({ fast: 1, good: 2 });

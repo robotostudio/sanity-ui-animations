@@ -46,7 +46,7 @@ export type GenerationLogEntry = {
   at: string;
 };
 
-export type GenerationResult =
+export type GenerationResult = (
   | {
       status: "success";
       scene: SceneSpec;
@@ -62,7 +62,11 @@ export type GenerationResult =
       budgetExhausted: boolean;
       calls: number;
       log: GenerationLogEntry;
-    };
+    }
+) & {
+  /** Set when the run finished but its `generationLog` entry was not saved. */
+  logError?: string;
+};
 
 /** The patch calls the run makes; `SanityClient["patch"]` satisfies it. */
 export type GenerationPatch = {
@@ -206,7 +210,8 @@ const randomKey = () =>
  * Each call uses `noWrite`, so Agent Actions only returns the scene; the run
  * normalises it and writes `scene` and `reactCode` in one patch per call.
  * Every run, successful or not, appends one `generationLog` entry. Failures
- * resolve to `status: "error"` rather than throwing.
+ * resolve to `status: "error"` rather than throwing; a log entry that cannot
+ * be saved is reported as `logError`.
  */
 export async function runGeneration({
   client,
@@ -270,11 +275,16 @@ export async function runGeneration({
     durationMs: now() - startedAt,
     at: new Date(startedAt).toISOString(),
   };
-  await client
-    .patch(draftId)
-    .setIfMissing({ generationLog: [] })
-    .append("generationLog", [log])
-    .commit();
+  try {
+    await client
+      .patch(draftId)
+      .setIfMissing({ generationLog: [] })
+      .append("generationLog", [log])
+      .commit();
+  } catch (error) {
+    // The run itself is over; report the lost entry rather than mask it.
+    return { ...outcome, calls, log, logError: errorMessage(error) };
+  }
   return { ...outcome, calls, log };
 }
 

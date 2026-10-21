@@ -24,9 +24,9 @@ export function compileSceneToReact(
 ): string {
   const scene = sceneData(spec, tokens);
   const theme = themeData(spec.theme === "dark" ? "dark" : "light", tokens);
-  return RUNTIME.replace("__SCENE__", () => literal(scene)).replace(
-    "__THEME__",
-    () => literal(theme)
+  // One pass, so placeholder-like text inside the data is never substituted.
+  return RUNTIME.replace(/__(SCENE|THEME)__/g, (_match, name) =>
+    literal(name === "SCENE" ? scene : theme)
   );
 }
 
@@ -193,14 +193,13 @@ function sceneData(spec: SceneSpec, tokens: DesignTokens) {
     const at = clock + Math.max(0, num(step.delayMs));
     const durationMs = stepDuration(step, tokens);
     clock = at + durationMs;
-    const role = tokens.roles.find((entry) => entry.role === step.role);
     return {
       key: str(step._key),
       action: str(step.action),
       target: str(step.target),
       at,
       durationMs,
-      ease: role?.css ?? "ease",
+      ease: roleOf(tokens, step.role)?.css ?? "ease",
       value: typeof step.value === "string" ? step.value : null,
       badge: badgeData(step.badge),
     };
@@ -218,8 +217,8 @@ function sceneData(spec: SceneSpec, tokens: DesignTokens) {
         id: target,
         transform:
           step.action === "reveal"
-            ? `translateY(${num(roleRise(tokens))}px)`
-            : `scale(${num(roleScale(tokens), 1)})`,
+            ? `translateY(${num(roleOf(tokens, "reveal")?.risePx, 16)}px)`
+            : `scale(${num(roleOf(tokens, "enter")?.scaleFrom, 0.96)})`,
       });
     }
     seen.add(target);
@@ -234,6 +233,7 @@ function sceneData(spec: SceneSpec, tokens: DesignTokens) {
     mode: str(spec.sceneMode),
     label: str(spec.label),
     size: num(spec.canvas?.size, tokens.canvas.defaultSizePx),
+    titleBar: LAYOUT.titleBarPx,
     windows,
     connectors,
     cursor: spec.cursor
@@ -253,15 +253,12 @@ function stepDuration(step: SceneStep, tokens: DesignTokens): number {
   if (typeof step.durationMs === "number" && Number.isFinite(step.durationMs)) {
     return Math.max(0, step.durationMs);
   }
-  const role = tokens.roles.find((entry) => entry.role === step.role);
-  return role?.duration?.maxMs ?? SWEEP_FALLBACK_MS;
+  return roleOf(tokens, step.role)?.duration?.maxMs ?? SWEEP_FALLBACK_MS;
 }
 
-const roleRise = (tokens: DesignTokens) =>
-  tokens.roles.find((entry) => entry.role === "reveal")?.risePx ?? 16;
-
-const roleScale = (tokens: DesignTokens) =>
-  tokens.roles.find((entry) => entry.role === "enter")?.scaleFrom ?? 0.96;
+/** A role's token, or undefined when the tokens (or the step) lack it. */
+const roleOf = (tokens: DesignTokens, role: unknown) =>
+  tokens.roles.find((entry) => entry.role === role);
 
 function themeData(theme: "light" | "dark", tokens: DesignTokens) {
   const colors = tokens.scene[theme];
@@ -280,7 +277,7 @@ function themeData(theme: "light" | "dark", tokens: DesignTokens) {
     trafficInactive: colors.trafficLight.inactive,
     radius: num(chrome.cornerRadiusPx),
     blur: num(chrome.backdropBlurPx),
-    light: num(chrome.trafficLightDiameterPx),
+    lightDiameter: num(chrome.trafficLightDiameterPx),
     lightGap: num(chrome.trafficLightGapPx),
     lightInset: num(chrome.trafficLightInsetPx),
     badgeHeight: num(tokens.badges.heightPx),
@@ -312,6 +309,7 @@ type Scene = {
   mode: string;
   label: string;
   size: number;
+  titleBar: number;
   windows: {
     id: string;
     title: string;
@@ -463,6 +461,9 @@ export default function SceneAnimation() {
     }
     const timers: number[] = [];
     const play = () => {
+      for (const timer of timers.splice(0)) {
+        window.clearTimeout(timer);
+      }
       setLanded(0);
       SCENE.steps.forEach((step, index) => {
         timers.push(window.setTimeout(() => setLanded(index + 1), step.at));
@@ -552,7 +553,7 @@ export default function SceneAnimation() {
                 alignItems: "center",
                 display: "flex",
                 gap: THEME.lightGap,
-                height: 52,
+                height: SCENE.titleBar,
                 paddingLeft: THEME.lightInset,
               }}
             >
@@ -564,8 +565,8 @@ export default function SceneAnimation() {
                       ? THEME.trafficActive
                       : THEME.trafficInactive,
                     borderRadius: 999,
-                    height: THEME.light,
-                    width: THEME.light,
+                    height: THEME.lightDiameter,
+                    width: THEME.lightDiameter,
                   }}
                 />
               ))}
