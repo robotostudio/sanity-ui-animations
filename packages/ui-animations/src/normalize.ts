@@ -1,5 +1,6 @@
 import { cursorGlideRange, cursorTargetPoint, type Point } from "./cursor";
 import { nearestMember } from "./enum";
+import { MAX_STEP_MS, MIN_WINDOW_H, MIN_WINDOW_W } from "./limits";
 import {
   BADGE_STATUSES,
   ELEMENT_KINDS,
@@ -21,12 +22,6 @@ import {
   WINDOW_KINDS,
 } from "./scene-spec";
 import { DEFAULT_TOKENS, type DesignTokens, roleToken } from "./tokens";
-
-/** Smallest window the Studio schema accepts, design px. */
-const MIN_WINDOW_W = 120;
-const MIN_WINDOW_H = 80;
-/** Longest `delayMs` or `durationMs` the Studio schema accepts. */
-const MAX_STEP_MS = 5000;
 
 const DEFAULT_WINDOW_W = 360;
 const DEFAULT_WINDOW_H = 320;
@@ -568,6 +563,8 @@ const ACTION_SYNONYMS = {
   dismiss: "exit",
   close: "exit",
   change: "update",
+  edit: "update",
+  modify: "update",
   set: "update",
   tap: "click",
   press: "click",

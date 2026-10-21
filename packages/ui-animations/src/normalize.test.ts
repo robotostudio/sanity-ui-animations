@@ -196,6 +196,7 @@ describe("normalizeScene", () => {
       ["sceneMode", "zoom", "intro"],
       ["theme", "night", "dark"],
       ["theme", "purple", "light"],
+      ["theme", "drak", "light"],
     ] as const)("maps %s %j to %j", (field, value, expected) => {
       expect(normalizeScene({ [field]: value } as SceneSpecDraft)[field]).toBe(
         expected
@@ -230,6 +231,16 @@ describe("normalizeScene", () => {
         status: "neutral",
         label: "New",
       });
+    });
+
+    it("never reads a short word as a near-miss of another, so `edit` updates rather than exits", () => {
+      const scene = normalizeScene(
+        withSteps([
+          { action: "edit" as never, target: "el", value: "$1" },
+          { action: "exti" as never, target: "el" },
+        ])
+      );
+      expect(scene.steps.map((s) => s.action)).toEqual(["update", "enter"]);
     });
 
     it("infers an unknown action from what the step targets", () => {

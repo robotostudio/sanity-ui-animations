@@ -1,11 +1,19 @@
 import { cursorGlideEnvelope } from "./cursor";
-import type {
-  MotionRole,
-  SceneAnchor,
-  SceneSpec,
-  SceneStep,
-  SceneWindow,
-  StepAction,
+import { MIN_WINDOW_H, MIN_WINDOW_W } from "./limits";
+import {
+  BADGE_STATUSES,
+  ELEMENT_KINDS,
+  MOTION_ROLES,
+  type MotionRole,
+  SCENE_MODES,
+  SCENE_THEMES,
+  STEP_ACTIONS,
+  type SceneAnchor,
+  type SceneSpec,
+  type SceneStep,
+  type SceneWindow,
+  type StepAction,
+  WINDOW_KINDS,
 } from "./scene-spec";
 import {
   DEFAULT_TOKENS,
@@ -34,6 +42,7 @@ export const VALIDATION_CODES = [
   "no-steps",
   "missing-label",
   "canvas-size",
+  "invalid-value",
   "duplicate-id",
   "duplicate-key",
   "dangling-target",
@@ -41,6 +50,7 @@ export const VALIDATION_CODES = [
   "dangling-cursor-target",
   "dangling-still-step",
   "window-outside-canvas",
+  "window-too-small",
   "tide-overused",
   "duration-out-of-range",
   "action-target-mismatch",
@@ -65,9 +75,10 @@ const MAX_STEPS = 14;
  * `Rule.custom` failures; the web route refuses to render a scene with errors.
  *
  * Errors: at least one window and one step, an accessible label, canvas size
- * inside `tokens.canvas`, unique ids (one namespace) and `_key`s (per array),
+ * inside `tokens.canvas`, every enum field a known member, unique ids (one namespace) and `_key`s (per array),
  * every reference resolves (step targets, connector anchors, cursor targets,
- * `stillStepKey`), windows inside the canvas, at most
+ * `stillStepKey`), windows inside the canvas and no smaller than the
+ * schema's minimum, at most
  * `tokens.tide.maxPerScene` accents, every `durationMs` inside its role's
  * range (cursor glides: anywhere from a hop to a full glide), step actions
  * suit their target (`move`/`click` on cursor targets, `update` on elements,
@@ -84,11 +95,13 @@ const MAX_STEPS = 14;
  * Returns an empty array when the scene is valid.
  */
 export function validateScene(
-  spec: SceneSpec,
+  scene: SceneSpec,
   tokens: DesignTokens = DEFAULT_TOKENS
 ): ValidationIssue[] {
+  const spec = readable(scene);
   const report = new Report();
   checkCounts(spec, report);
+  checkEnums(spec, report);
   checkCanvas(spec, tokens, report);
   const kinds = checkIds(spec, report);
   checkAnchors(spec, report);
@@ -113,8 +126,8 @@ class Report {
 }
 
 function checkCounts(spec: SceneSpec, report: Report) {
-  const windows = spec.windows ?? [];
-  const steps = spec.steps ?? [];
+  const windows = spec.windows;
+  const steps = spec.steps;
   if (windows.length === 0) {
     report.error("no-windows", "The scene needs at least one window.", [
       "windows",
@@ -135,7 +148,7 @@ function checkCounts(spec: SceneSpec, report: Report) {
       ["steps"]
     );
   }
-  if (!spec.label?.trim()) {
+  if (!spec.label.trim()) {
     report.error(
       "missing-label",
       "Add an accessible description: screen readers read it instead of the animation.",
@@ -145,7 +158,7 @@ function checkCounts(spec: SceneSpec, report: Report) {
 }
 
 function checkCanvas(spec: SceneSpec, tokens: DesignTokens, report: Report) {
-  const size = spec.canvas?.size;
+  const size = spec.canvas.size;
   const { minSizePx, maxSizePx } = tokens.canvas;
   if (!isNumber(size) || size < minSizePx || size > maxSizePx) {
     report.error(
@@ -155,13 +168,76 @@ function checkCanvas(spec: SceneSpec, tokens: DesignTokens, report: Report) {
     );
     return;
   }
-  for (const [index, win] of (spec.windows ?? []).entries()) {
+  for (const [index, win] of spec.windows.entries()) {
+    const path = itemPath(["windows"], win, index);
     if (!insideCanvas(win, size)) {
       report.error(
         "window-outside-canvas",
         `The window "${win.id ?? ""}" must sit inside the ${size}px canvas.`,
-        itemPath(["windows"], win, index)
+        path
       );
+    }
+    if (win.w < MIN_WINDOW_W || win.h < MIN_WINDOW_H) {
+      report.error(
+        "window-too-small",
+        `The window "${win.id ?? ""}" must be at least ${MIN_WINDOW_W} by ${MIN_WINDOW_H}px.`,
+        path
+      );
+    }
+  }
+}
+
+/** Every enum field holds one of its members. */
+function checkEnums(spec: SceneSpec, report: Report) {
+  const check = (
+    value: unknown,
+    members: readonly string[],
+    what: string,
+    path: Path
+  ) => {
+    if (typeof value === "string" && members.includes(value)) {
+      return;
+    }
+    report.error(
+      "invalid-value",
+      `"${String(value ?? "")}" is not a ${what}; use one of ${members.join(", ")}.`,
+      path
+    );
+  };
+  check(spec.sceneMode, SCENE_MODES, "scene mode", ["sceneMode"]);
+  check(spec.theme, SCENE_THEMES, "theme", ["theme"]);
+  for (const [index, win] of spec.windows.entries()) {
+    const path = itemPath(["windows"], win, index);
+    check(win.kind, WINDOW_KINDS, "window kind", [...path, "kind"]);
+    for (const [elementIndex, element] of win.elements.entries()) {
+      const elementPath = itemPath(
+        [...path, "elements"],
+        element,
+        elementIndex
+      );
+      check(element.kind, ELEMENT_KINDS, "element kind", [
+        ...elementPath,
+        "kind",
+      ]);
+      if (element.badge !== undefined) {
+        check(element.badge?.status, BADGE_STATUSES, "badge status", [
+          ...elementPath,
+          "badge",
+          "status",
+        ]);
+      }
+    }
+  }
+  for (const [index, entry] of spec.steps.entries()) {
+    const path = itemPath(["steps"], entry, index);
+    check(entry.action, STEP_ACTIONS, "step action", [...path, "action"]);
+    check(entry.role, MOTION_ROLES, "motion role", [...path, "role"]);
+    if (entry.badge !== undefined) {
+      check(entry.badge?.status, BADGE_STATUSES, "badge status", [
+        ...path,
+        "badge",
+        "status",
+      ]);
     }
   }
 }
@@ -199,17 +275,17 @@ function checkIds(spec: SceneSpec, report: Report): Map<string, TargetKind> {
     }
   };
 
-  const windows = spec.windows ?? [];
+  const windows = spec.windows;
   claimAll(windows, "window", ["windows"]);
   for (const [index, win] of windows.entries()) {
-    claimAll(win.elements ?? [], "element", [
+    claimAll(win.elements, "element", [
       ...itemPath(["windows"], win, index),
       "elements",
     ]);
   }
-  claimAll(spec.connectors ?? [], "connector", ["connectors"]);
+  claimAll(spec.connectors, "connector", ["connectors"]);
   claimAll(spec.cursor?.targets ?? [], "cursor target", ["cursor", "targets"]);
-  checkKeys(spec.steps ?? [], ["steps"], report);
+  checkKeys(spec.steps, ["steps"], report);
   return kinds;
 }
 
@@ -218,7 +294,7 @@ function checkIds(spec: SceneSpec, report: Report): Map<string, TargetKind> {
  * element inside that same window.
  */
 function checkAnchors(spec: SceneSpec, report: Report) {
-  const windows = spec.windows ?? [];
+  const windows = spec.windows;
   const check = (
     anchor: Partial<SceneAnchor> | undefined,
     path: Path,
@@ -233,7 +309,7 @@ function checkAnchors(spec: SceneSpec, report: Report) {
       return;
     }
     const elementId = anchor?.elementId;
-    if (elementId && !win.elements?.some((el) => el.id === elementId)) {
+    if (elementId && !win.elements.some((el) => el.id === elementId)) {
       report.error(
         code,
         `The window "${win.id}" has no element with the id "${elementId}".`,
@@ -241,7 +317,7 @@ function checkAnchors(spec: SceneSpec, report: Report) {
       );
     }
   };
-  for (const [index, connector] of (spec.connectors ?? []).entries()) {
+  for (const [index, connector] of spec.connectors.entries()) {
     const path = itemPath(["connectors"], connector, index);
     check(connector.from, [...path, "from"], "dangling-anchor");
     check(connector.to, [...path, "to"], "dangling-anchor");
@@ -258,8 +334,8 @@ function checkAnchors(spec: SceneSpec, report: Report) {
 function checkAccents(spec: SceneSpec, tokens: DesignTokens, report: Report) {
   const max = tokens.tide.maxPerScene;
   let accents = 0;
-  for (const [index, win] of (spec.windows ?? []).entries()) {
-    for (const [elementIndex, element] of (win.elements ?? []).entries()) {
+  for (const [index, win] of spec.windows.entries()) {
+    for (const [elementIndex, element] of win.elements.entries()) {
       if (element.accent === true) {
         accents += 1;
       }
@@ -290,7 +366,7 @@ function checkStillStep(spec: SceneSpec, report: Report) {
     }
     return;
   }
-  if (!(spec.steps ?? []).some((entry) => entry._key === stillStepKey)) {
+  if (!spec.steps.some((entry) => entry._key === stillStepKey)) {
     report.error(
       "dangling-still-step",
       `No step has the key "${stillStepKey}".`,
@@ -310,7 +386,7 @@ function checkSteps(
   let revealRun = 0;
   let cursorOn: string | undefined;
 
-  for (const [index, entry] of (spec.steps ?? []).entries()) {
+  for (const [index, entry] of spec.steps.entries()) {
     const path = itemPath(["steps"], entry, index);
     const kind = entry.target ? kinds.get(entry.target) : undefined;
     checkStepTarget(entry, kind, path, report);
@@ -496,6 +572,43 @@ function checkKeys(
 /** Address an array item by `_key`, as Sanity does, or by index without one. */
 function itemPath(path: Path, item: { _key?: string }, index: number): Path {
   return [...path, item._key ? { _key: item._key } : index];
+}
+
+/**
+ * The scene with every list guaranteed to be a list of objects and the label
+ * a string, so the checks can read a partial or malformed value from the
+ * dataset without throwing. Values keep their raw types otherwise, for the
+ * checks to report.
+ */
+function readable(scene: unknown): SceneSpec {
+  const spec = record(scene);
+  const cursor = spec.cursor === undefined ? undefined : record(spec.cursor);
+  return {
+    ...spec,
+    label: typeof spec.label === "string" ? spec.label : "",
+    canvas: record(spec.canvas),
+    windows: records(spec.windows).map((win) => ({
+      ...win,
+      elements: records(win.elements),
+    })),
+    connectors: records(spec.connectors),
+    ...(cursor
+      ? { cursor: { ...cursor, targets: records(cursor.targets) } }
+      : {}),
+    steps: records(spec.steps),
+  } as SceneSpec;
+}
+
+type Raw = Record<string, unknown>;
+
+function record(value: unknown): Raw {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Raw)
+    : {};
+}
+
+function records(value: unknown): Raw[] {
+  return Array.isArray(value) ? value.map(record) : [];
 }
 
 function isNumber(value: unknown): value is number {

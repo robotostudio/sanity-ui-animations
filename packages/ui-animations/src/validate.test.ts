@@ -342,6 +342,95 @@ describe("validateScene", () => {
     );
   });
 
+  it.each([
+    [
+      "an unknown action",
+      (s: SceneSpec) => (step(s, "s1").action = "zoom" as never),
+      ["steps", { _key: "s1" }, "action"],
+    ],
+    [
+      "an unknown role",
+      (s: SceneSpec) => (step(s, "s1").role = "wobble" as never),
+      ["steps", { _key: "s1" }, "role"],
+    ],
+    [
+      "an unknown scene mode",
+      (s: SceneSpec) => (s.sceneMode = "loop" as never),
+      ["sceneMode"],
+    ],
+    [
+      "an unknown theme",
+      (s: SceneSpec) => (s.theme = "sepia" as never),
+      ["theme"],
+    ],
+    [
+      "an unknown window kind",
+      (s: SceneSpec) => Object.assign(s.windows[0] ?? {}, { kind: "tab" }),
+      ["windows", { _key: "w-cart" }, "kind"],
+    ],
+    [
+      "an unknown element kind",
+      (s: SceneSpec) =>
+        Object.assign(s.windows[0]?.elements[0] ?? {}, { kind: "chip" }),
+      [
+        "windows",
+        { _key: "w-cart" },
+        "elements",
+        { _key: "e-headphones" },
+        "kind",
+      ],
+    ],
+    [
+      "an unknown badge status",
+      (s: SceneSpec) =>
+        Object.assign(s.windows[1]?.elements[0]?.badge ?? {}, {
+          status: "fine",
+        }),
+      [
+        "windows",
+        { _key: "w-payments" },
+        "elements",
+        { _key: "e-order" },
+        "badge",
+        "status",
+      ],
+    ],
+  ] as const)("reports %s", (_, edit, path) => {
+    expect(validateScene(edited(edit))).toContainEqual(
+      expect.objectContaining({
+        severity: "error",
+        code: "invalid-value",
+        path,
+      })
+    );
+  });
+
+  it("reports a window smaller than the schema allows", () => {
+    const issues = validateScene(
+      edited((s) => Object.assign(s.windows[1] ?? {}, { w: 100, h: 60 }))
+    );
+    expect(issues).toContainEqual(
+      expect.objectContaining({
+        severity: "error",
+        code: "window-too-small",
+        path: ["windows", { _key: "w-payments" }],
+      })
+    );
+  });
+
+  it.each([
+    ["null", null],
+    ["a null window", { windows: [null] }],
+    ["a numeric label", { label: 5 }],
+    [
+      "elements that are not a list",
+      { windows: [{ _key: "w", elements: "x" }] },
+    ],
+    ["a cursor that is a string", { cursor: "here", steps: [null] }],
+  ])("does not throw on %s", (_, value) => {
+    expect(() => validateScene(value as unknown as SceneSpec)).not.toThrow();
+  });
+
   it("does not throw on a partial scene straight from the dataset", () => {
     const partial = {
       windows: [{ _key: "w" }],

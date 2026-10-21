@@ -1,9 +1,10 @@
 /**
  * Map a raw value onto one member of `members`: an exact match after
  * trimming and lowercasing, then a known synonym, then the closest member by
- * edit distance (two edits at most, so `ambeint` becomes `ambient` but `zoom`
- * is not forced onto anything), else `undefined` so the caller can pick a
- * default that fits the context.
+ * edit distance, else `undefined` so the caller can pick a default that fits
+ * the context. Short members allow fewer edits: one edit turns `edit` into
+ * `exit`, so words of four letters or fewer must match exactly, up to six
+ * may be one edit off, and longer ones two (`ambeint` becomes `ambient`).
  */
 export function nearestMember<T extends string>(
   value: unknown,
@@ -23,10 +24,10 @@ export function nearestMember<T extends string>(
     return synonym;
   }
   let best: T | undefined;
-  let bestDistance = MAX_EDITS + 1;
+  let bestDistance = Number.POSITIVE_INFINITY;
   for (const member of members) {
     const distance = editDistance(raw, member);
-    if (distance < bestDistance) {
+    if (distance <= maxEdits(member) && distance < bestDistance) {
       best = member;
       bestDistance = distance;
     }
@@ -34,7 +35,12 @@ export function nearestMember<T extends string>(
   return best;
 }
 
-const MAX_EDITS = 2;
+function maxEdits(member: string): number {
+  if (member.length <= 4) {
+    return 0;
+  }
+  return member.length <= 6 ? 1 : 2;
+}
 
 /** Levenshtein distance between two short strings. */
 function editDistance(a: string, b: string): number {
