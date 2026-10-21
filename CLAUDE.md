@@ -36,14 +36,14 @@ pnpm --filter studio extract   # Refresh the committed apps/studio/schema.json
 pnpm type                      # Generate types from schema.json (root via turbo, or apps/studio)
 
 # Tests
-pnpm test             # Vitest unit tests (sanity-blocks, ui-animations)
+pnpm test             # Vitest unit tests (@sanity-ui-animations/sanity-blocks and @sanity-ui-animations/ui-animations)
 pnpm test:e2e         # Playwright smoke tests (apps/web, needs a running/deployed site)
 pnpm --filter web test:e2e:presentation  # Studio → website loop (Presentation drafts, publish, live update, no leaks); starts Studio on 3333 + `next build && next start` on 3000
 ```
 
-Note: `pnpm test` at the root is `turbo run test`, which reaches every package
-with a `test` script (`sanity-blocks`, `ui-animations`). Run a single
-package's suite with `pnpm --filter @sanity-ui-animations/sanity-blocks test`.
+Note: `pnpm test` at the root is `turbo run test`, which reaches the packages with a
+`test` script: `@sanity-ui-animations/sanity-blocks` and `@sanity-ui-animations/ui-animations`.
+Run a single package's suite with `pnpm --filter @sanity-ui-animations/sanity-blocks test`.
 
 ## Monorepo Structure
 
