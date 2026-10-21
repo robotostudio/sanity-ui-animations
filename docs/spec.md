@@ -28,7 +28,7 @@ contracts named here.
 | `compileSceneToReact` | `packages/ui-animations/src/compile.ts` | stub |
 | `animation`, `designTokens` schema | `apps/studio/schemaTypes/documents/` | done |
 | Generator input + preview | Studio custom input on `animation` | ticket |
-| Primitive library (React) | `packages/ui-animations` (new `./react` export) | ticket |
+| Primitive library (React) | `packages/ui-animations/src/react` (`./react` export) | done |
 | `/animations/[slug]` | `apps/web` | ticket |
 | `pnpm tokens:sync` | `scripts/tokens-sync.ts` | placeholder |
 
@@ -278,3 +278,14 @@ animations.
    the example or shorten the token projection.
 7. **Publishing reactCode.** Should the compiled code be exposed on the website
    (copy button), or kept Studio-only?
+
+- **Assumption (confirm with Jono):** Primitives lay out a window's elements
+  themselves (44px title bar, 16px padding, 8px gaps; rows and buttons 40px,
+  cards 64px), so the spec only places windows. Content past the window's
+  height is clipped.
+- **Assumption (confirm with Jono):** A step without `durationMs` takes its
+  role's longest duration; `sweep` takes 1000ms; a cursor `move` between the
+  hop and full-glide distances scales linearly from `hopMs` to the glide max.
+- **Assumption (confirm with Jono):** Intro scenes play once on mount (not on
+  scroll into view). Ambient scenes hold their final state 2s, fade out over
+  400ms and loop.

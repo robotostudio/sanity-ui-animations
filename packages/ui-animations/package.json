@@ -8,16 +8,30 @@
     "lint": "biome lint .",
     "format": "biome format --write .",
     "format:check": "biome format .",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@sanity-ui-animations/typescript-config": "workspace:*",
-    "typescript": "catalog:"
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "jsdom": "^29.1.1",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "exports": {
     ".": "./src/index.ts",
     "./scene-spec": "./src/scene-spec.ts",
     "./tokens": "./src/tokens.ts",
-    "./fixtures/*": "./src/fixtures/*.ts"
+    "./fixtures/*": "./src/fixtures/*.ts",
+    "./react": "./src/react/index.ts"
+  },
+  "peerDependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
   }
 }
