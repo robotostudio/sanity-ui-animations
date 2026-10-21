@@ -29,7 +29,7 @@ contracts named here.
 | `animation`, `designTokens` schema | `apps/studio/schemaTypes/documents/` | done |
 | Generator input + preview | Studio custom input on `animation` | ticket |
 | Primitive library (React) | `packages/ui-animations/src/react` (`./react` export) | done |
-| `/animations/[slug]` | `apps/web` | ticket |
+| `/animations/[slug]`, `/animations` | `apps/web/src/app/animations` | done |
 | `pnpm tokens:sync` | `scripts/tokens-sync.ts` | placeholder |
 
 ## User flow
@@ -306,3 +306,13 @@ animations.
   report rather than renamed, and an animation with no scene can't be
   published. Step and window counts outside the brief (6 to 14 steps, one to
   three windows) are warnings, not errors.
+- **Assumption (confirm with Jono):** `reactCode` stays Studio-only. The web
+  queries never select it and the site renders no code, so question 7 is
+  answered "Studio-only" until Jono says otherwise.
+- **Assumption (confirm with Jono):** `/animations` serves published documents
+  only, even in draft mode or Presentation; the Studio preview covers drafts.
+  A published scene that now fails `validateScene` keeps its page and title
+  but shows a neutral "isn't available" line in place of the scene, and logs
+  the issues server-side. The index lists every published animation with a
+  slug and a scene, ordered by title. The site uses `DEFAULT_TOKENS` until the
+  tokens ticket supplies the `designTokens` merge.

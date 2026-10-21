@@ -367,3 +367,28 @@ export const queryRedirects = defineQuery(`
     "permanent" : permanent == "true"
   }
 `);
+
+// Animations are served published-only and without stega: scene strings are
+// ids that steps refer to, so invisible characters would break every lookup.
+const animationListFilter = `_type == "animation" && defined(slug.current) && defined(scene)`;
+
+export const queryAnimationPaths = defineQuery(`
+  *[${animationListFilter}].slug.current
+`);
+
+export const queryAnimationIndex = defineQuery(`
+  *[${animationListFilter}] | order(title asc){
+    _id,
+    title,
+    "slug": slug.current
+  }
+`);
+
+export const queryAnimationBySlug = defineQuery(`
+  *[_type == "animation" && slug.current == $slug][0]{
+    _id,
+    title,
+    "slug": slug.current,
+    scene
+  }
+`);

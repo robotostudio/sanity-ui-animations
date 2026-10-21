@@ -4292,6 +4292,113 @@ export type QueryRedirectsResult = Array<{
   permanent: false | true;
 }>;
 
+// Source: ../../packages/sanity/src/query.ts
+// Variable: queryAnimationPaths
+// Query: *[_type == "animation" && defined(slug.current) && defined(scene)].slug.current
+export type QueryAnimationPathsResult = Array<string>;
+
+// Source: ../../packages/sanity/src/query.ts
+// Variable: queryAnimationIndex
+// Query: *[_type == "animation" && defined(slug.current) && defined(scene)] | order(title asc){    _id,    title,    "slug": slug.current  }
+export type QueryAnimationIndexResult = Array<{
+  _id: string;
+  title: string;
+  slug: string;
+}>;
+
+// Source: ../../packages/sanity/src/query.ts
+// Variable: queryAnimationBySlug
+// Query: *[_type == "animation" && slug.current == $slug][0]{    _id,    title,    "slug": slug.current,    scene  }
+export type QueryAnimationBySlugResult = {
+  _id: string;
+  title: string;
+  slug: string;
+  scene: {
+    sceneMode: "ambient" | "interactive" | "intro";
+    theme: "dark" | "light";
+    canvas?: {
+      size: number;
+    };
+    label: string;
+    windows?: Array<{
+      id: string;
+      title: string;
+      kind: "app" | "browser";
+      x: number;
+      y: number;
+      w: number;
+      h: number;
+      active?: boolean;
+      elements?: Array<{
+        id: string;
+        kind: "button" | "card" | "row";
+        label: string;
+        value?: string;
+        badge?: {
+          status: "error" | "info" | "neutral" | "success" | "warning";
+          label: string;
+        };
+        accent?: boolean;
+        _type: "sceneElement";
+        _key: string;
+      }>;
+      _type: "sceneWindow";
+      _key: string;
+    }>;
+    connectors?: Array<{
+      id: string;
+      from: {
+        windowId: string;
+        elementId?: string;
+      };
+      to: {
+        windowId: string;
+        elementId?: string;
+      };
+      dots?: boolean;
+      _type: "sceneConnector";
+      _key: string;
+    }>;
+    cursor?: {
+      start?: {
+        x?: number;
+        y?: number;
+      };
+      targets?: Array<{
+        id: string;
+        windowId: string;
+        elementId?: string;
+        click?: boolean;
+        _type: "cursorTarget";
+        _key: string;
+      }>;
+    };
+    steps?: Array<{
+      action: "click" | "enter" | "exit" | "move" | "reveal" | "update";
+      target: string;
+      role:
+        | "drawer"
+        | "enter"
+        | "exit"
+        | "glide"
+        | "move"
+        | "press"
+        | "reveal"
+        | "sweep";
+      delayMs: number;
+      durationMs?: number;
+      value?: string;
+      badge?: {
+        status: "error" | "info" | "neutral" | "success" | "warning";
+        label: string;
+      };
+      _type: "sceneStep";
+      _key: string;
+    }>;
+    stillStepKey?: string;
+  } | null;
+} | null;
+
 // Query TypeMap
 declare global {
   interface SanityQueries {
@@ -4309,6 +4416,9 @@ declare global {
     '\n  *[_type == "settings"][0]{\n    _id,\n    _type,\n    siteTitle,\n    logos {\n      logo {\n        \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n\n      },\n      logoDark {\n        \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n\n      },\n      footerLogo {\n        \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n\n      }\n    },\n    favicon {\n      "svg": svg.asset->url,\n      "ico": ico.asset->url\n    },\n    "ogImage": ogImage.asset->url + "?w=1200&h=630&fit=crop&fm=jpg&q=80",\n    siteDescription,\n    socialLinks{\n      linkedin,\n      facebook,\n      twitter,\n      instagram,\n      youtube,\n      reddit\n    }\n  }\n': QueryGlobalSeoSettingsResult;
     '\n  *[_type == "settings"][0]{\n    _id,\n    _type,\n    siteTitle,\n    siteDescription,\n    "logo": logos.logo.asset->url + "?w=80&h=40&dpr=3&fit=max",\n    "socialLinks": socialLinks,\n    "contactEmail": contactEmail,\n  }\n': QuerySettingsDataResult;
     '\n  *[_type == "redirect" && status == "active" && defined(source.current) && defined(destination.current)]{\n    "source":source.current, \n    "destination":destination.current, \n    "permanent" : permanent == "true"\n  }\n': QueryRedirectsResult;
+    '\n  *[_type == "animation" && defined(slug.current) && defined(scene)].slug.current\n': QueryAnimationPathsResult;
+    '\n  *[_type == "animation" && defined(slug.current) && defined(scene)] | order(title asc){\n    _id,\n    title,\n    "slug": slug.current\n  }\n': QueryAnimationIndexResult;
+    '\n  *[_type == "animation" && slug.current == $slug][0]{\n    _id,\n    title,\n    "slug": slug.current,\n    scene\n  }\n': QueryAnimationBySlugResult;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too
