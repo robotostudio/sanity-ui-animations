@@ -1,10 +1,10 @@
 import type { SceneBadge } from "../../scene-spec";
-import { useScene, useUnit, withOpacity } from "../context";
+import { useScene, usePxToCqw, withOpacity } from "../context";
 
 /** A fully round status pill: a dot in the status colour, then the label. */
 export function Badge({ badge }: { badge: SceneBadge }) {
   const { tokens, theme } = useScene();
-  const unit = useUnit();
+  const unit = usePxToCqw();
   const { badges } = tokens;
   const color =
     badge.status === "neutral" ? undefined : badges.colors[badge.status];

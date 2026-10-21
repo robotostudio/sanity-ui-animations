@@ -2,7 +2,13 @@ import { type CSSProperties, createContext, useContext } from "react";
 
 import type { SceneSpec } from "../scene-spec";
 import type { DesignTokens, SceneThemeTokens } from "../tokens";
-import type { SceneState, Timeline, TimelineEntry } from "./timeline";
+import {
+  entryAt,
+  findRole,
+  type SceneState,
+  type Timeline,
+  type TimelineEntry,
+} from "./timeline";
 
 export type SceneContextValue = {
   scene: SceneSpec;
@@ -26,11 +32,11 @@ export function useScene(): SceneContextValue {
 }
 
 /**
- * A length in design px, as a share of the canvas width. The canvas is a
+ * Converts design px to `cqw`: a length as a share of the canvas width. The canvas is a
  * size container, so the whole scene scales with it in plain CSS, with no
  * measuring and nothing to hydrate.
  */
-export function useUnit(): (px: number) => string {
+export function usePxToCqw(): (px: number) => string {
   const { scene } = useScene();
   const size = scene.canvas.size;
   return (px) => `${Number(((px / size) * 100).toFixed(4))}cqw`;
@@ -39,6 +45,16 @@ export function useUnit(): (px: number) => string {
 /** `color` at `percent` opacity. */
 export function withOpacity(color: string, percent: number): string {
   return `color-mix(in srgb, ${color} ${percent}%, transparent)`;
+}
+
+/** A CSS `transition` running `properties` on one step's duration and curve. */
+export function transitionFor(
+  entry: TimelineEntry,
+  properties: string[]
+): string {
+  return properties
+    .map((property) => `${property} ${entry.durationMs}ms ${entry.easing}`)
+    .join(", ");
 }
 
 /**
@@ -50,11 +66,10 @@ export function entryFor(
   context: SceneContextValue,
   id: string
 ): TimelineEntry | undefined {
-  const index = context.state.lastStep[id];
-  if (index !== undefined) {
-    return context.timeline.entries[index];
-  }
-  return context.timeline.entries.find((entry) => entry.step.target === id);
+  return (
+    entryAt(context.timeline, context.state.lastStep[id]) ??
+    context.timeline.entries.find((entry) => entry.step.target === id)
+  );
 }
 
 /**
@@ -65,25 +80,23 @@ export function entryFor(
 export function useVisibility(id: string): CSSProperties {
   const context = useScene();
   const { tokens, state, reducedMotion } = context;
-  const unit = useUnit();
+  const unit = usePxToCqw();
   const entry = entryFor(context, id);
   const hidden = state.hidden.has(id);
   const transitioned = state.lastStep[id] !== undefined && entry;
 
   const style: CSSProperties = { opacity: hidden ? 0 : 1 };
   if (transitioned) {
-    const properties = reducedMotion
-      ? ["opacity"]
-      : ["opacity", "transform", "filter"];
-    style.transition = properties
-      .map((property) => `${property} ${entry.durationMs}ms ${entry.easing}`)
-      .join(", ");
+    style.transition = transitionFor(
+      entry,
+      reducedMotion ? ["opacity"] : ["opacity", "transform", "filter"]
+    );
   }
   if (!(hidden && entry) || reducedMotion) {
     return style;
   }
 
-  const role = tokens.roles.find((token) => token.role === entry.step.role);
+  const role = findRole(tokens, entry.step.role);
   if (entry.step.action === "reveal") {
     style.transform = `translateY(${unit(role?.risePx ?? 0)})`;
     style.filter = `blur(${unit(tokens.choreography.maxBlurPx)})`;

@@ -161,6 +161,37 @@ describe("<Scene> playback", () => {
     expect(container.textContent).toContain("$135");
     expect(container.textContent).toContain("Paid");
     expect(container.querySelectorAll("animateMotion")).toHaveLength(3);
+    const connector = container.querySelector<SVGGElement>("[data-connector]");
+    expect(connector?.style.opacity).toBe("1");
+    expect(connector?.style.transition).toContain("opacity 900ms linear");
+  });
+
+  it("glides the cursor to a click aimed at a new target", () => {
+    preferReducedMotion(false);
+    vi.useFakeTimers();
+    const { container } = render(
+      <Scene
+        scene={{
+          ...checkoutScene,
+          steps: [
+            {
+              _key: "c",
+              action: "click",
+              target: "target-pay",
+              role: "press",
+              delayMs: 0,
+            },
+          ],
+        }}
+      />
+    );
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    const cursor = container.querySelector<HTMLElement>("[data-cursor]");
+    expect(cursor?.style.transition).toBe(
+      "transform 140ms cubic-bezier(0.23, 1, 0.32, 1)"
+    );
   });
 
   it("takes every colour from the tokens", () => {

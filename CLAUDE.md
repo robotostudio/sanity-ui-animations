@@ -36,13 +36,13 @@ pnpm --filter studio extract   # Refresh the committed apps/studio/schema.json
 pnpm type                      # Generate types from schema.json (root via turbo, or apps/studio)
 
 # Tests
-pnpm test             # Vitest unit tests (currently only @sanity-ui-animations/sanity-blocks)
+pnpm test             # Vitest unit tests (sanity-blocks, ui-animations)
 pnpm test:e2e         # Playwright smoke tests (apps/web, needs a running/deployed site)
 pnpm --filter web test:e2e:presentation  # Studio → website loop (Presentation drafts, publish, live update, no leaks); starts Studio on 3333 + `next build && next start` on 3000
 ```
 
-Note: `pnpm test` at the root is `turbo run test`, which today only reaches
-`@sanity-ui-animations/sanity-blocks` — the one package with a `test` script. Run a single
+Note: `pnpm test` at the root is `turbo run test`, which reaches every package
+with a `test` script (`sanity-blocks`, `ui-animations`). Run a single
 package's suite with `pnpm --filter @sanity-ui-animations/sanity-blocks test`.
 
 ## Monorepo Structure
@@ -55,7 +55,7 @@ packages/
   env/           — @sanity-ui-animations/env — Zod-validated env vars via @t3-oss/env-nextjs
   sanity/        — @sanity-ui-animations/sanity — Shared Sanity client, GROQ queries, live preview, image utils
   sanity-blocks/ — @sanity-ui-animations/sanity-blocks — Block schemas, GROQ projections, React block components, Markdown serializers, Vitest suite
-  ui-animations/ — @sanity-ui-animations/ui-animations — Scene contract: SceneSpec types, DesignTokens + DEFAULT_TOKENS, normalise/validate/compile entry points, fixtures (see docs/spec.md)
+  ui-animations/ — @sanity-ui-animations/ui-animations — Scene contract: SceneSpec types, DesignTokens + DEFAULT_TOKENS, normalise/validate/compile entry points, fixtures, and the React primitive library under `./react` (see docs/spec.md)
   ui/            — @sanity-ui-animations/ui — Shared UI components (Base UI + CVA + Tailwind, shadcn-style; only `Slot` is Radix)
   tailwind-config/   — @sanity-ui-animations/tailwind-config — Shared Tailwind v4 theme + `cn` utility
   logger/        — @sanity-ui-animations/logger — Structured logger class with context prefixes

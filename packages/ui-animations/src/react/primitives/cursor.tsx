@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 
-import { CURSOR_ID } from "../timeline";
-import { useScene, useUnit } from "../context";
+import { transitionFor, usePxToCqw, useScene } from "../context";
+import { CURSOR_ID, entryAt } from "../timeline";
 
 /** Arrow pointer, tip at the origin, in design px. */
 const ARROW = "M 0 0 L 0 17 L 4.5 13 L 7.5 20 L 10.5 18.8 L 7.6 12 L 13 12 Z";
@@ -14,13 +14,11 @@ const ARROW = "M 0 0 L 0 17 L 4.5 13 L 7.5 20 L 10.5 18.8 L 7.6 12 L 13 12 Z";
 export function Cursor() {
   const context = useScene();
   const { scene, tokens, theme, state, timeline, reducedMotion } = context;
-  const unit = useUnit();
+  const unit = usePxToCqw();
   const ref = useRef<HTMLDivElement>(null);
-  const moveIndex = state.lastStep[CURSOR_ID];
-  const move =
-    moveIndex === undefined ? undefined : timeline.entries[moveIndex];
-  const click =
-    state.lastClick === -1 ? undefined : timeline.entries[state.lastClick];
+  // A click aimed somewhere new travels there too, on the press curve.
+  const travel = entryAt(timeline, state.lastStep[CURSOR_ID]);
+  const click = entryAt(timeline, state.lastClick);
 
   useEffect(() => {
     const node = ref.current?.firstElementChild;
@@ -61,8 +59,8 @@ export function Cursor() {
         top: 0,
         transform: `translate(${unit(state.cursor.x)}, ${unit(state.cursor.y)})`,
         transition:
-          move && move.step.action === "move" && !reducedMotion
-            ? `transform ${move.durationMs}ms ${move.easing}`
+          travel && !reducedMotion
+            ? transitionFor(travel, ["transform"])
             : undefined,
       }}
     >

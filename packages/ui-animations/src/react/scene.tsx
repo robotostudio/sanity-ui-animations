@@ -76,8 +76,8 @@ export function Scene({
               transition: `opacity ${AMBIENT_FADE_MS}ms linear`,
             }}
           >
-            {scene.windows.map((window) => (
-              <Window key={window._key} window={window} />
+            {scene.windows.map((sceneWindow) => (
+              <Window key={sceneWindow._key} sceneWindow={sceneWindow} />
             ))}
             <svg
               aria-hidden="true"

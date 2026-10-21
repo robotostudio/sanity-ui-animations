@@ -30,16 +30,15 @@ export type Point = { x: number; y: number };
 export type Rect = { x: number; y: number; w: number; h: number };
 
 /** Canvas-space boxes of a window's elements, keyed by element id. */
-export function elementRects(window: SceneWindow): Map<string, Rect> {
+export function elementRects(sceneWindow: SceneWindow): Map<string, Rect> {
   const rects = new Map<string, Rect>();
-  let y = window.y + LAYOUT.titleBarPx + LAYOUT.paddingPx;
-  for (const element of window.elements) {
-    const h =
-      LAYOUT.elementHeightPx[element.kind] ?? LAYOUT.elementHeightPx.row;
+  let y = sceneWindow.y + LAYOUT.titleBarPx + LAYOUT.paddingPx;
+  for (const element of sceneWindow.elements) {
+    const h = LAYOUT.elementHeightPx[element.kind];
     rects.set(element.id, {
-      x: window.x + LAYOUT.paddingPx,
+      x: sceneWindow.x + LAYOUT.paddingPx,
       y,
-      w: window.w - LAYOUT.paddingPx * 2,
+      w: sceneWindow.w - LAYOUT.paddingPx * 2,
       h,
     });
     y += h + LAYOUT.gapPx;
@@ -52,14 +51,17 @@ export function anchorRect(
   scene: SceneSpec,
   anchor: SceneAnchor
 ): Rect | undefined {
-  const window = scene.windows.find((entry) => entry.id === anchor.windowId);
-  if (!window) {
+  const sceneWindow = scene.windows.find(
+    (entry) => entry.id === anchor.windowId
+  );
+  if (!sceneWindow) {
     return;
   }
   if (!anchor.elementId) {
-    return { x: window.x, y: window.y, w: window.w, h: window.h };
+    const { x, y, w, h } = sceneWindow;
+    return { x, y, w, h };
   }
-  return elementRects(window).get(anchor.elementId);
+  return elementRects(sceneWindow).get(anchor.elementId);
 }
 
 /** Where the cursor waits before its first move. */

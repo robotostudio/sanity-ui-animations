@@ -2,7 +2,8 @@ import { type CSSProperties, type RefObject, useEffect, useRef } from "react";
 
 import type { SceneElement } from "../../scene-spec";
 import type { Rect } from "../layout";
-import { useScene, useUnit, useVisibility } from "../context";
+import { usePxToCqw, useScene, useVisibility } from "../context";
+import { entryAt, findRole } from "../timeline";
 import { Badge } from "./badge";
 
 /**
@@ -11,8 +12,7 @@ import { Badge } from "./badge";
  */
 function useUpdateFade(ref: RefObject<HTMLElement | null>, id: string) {
   const { tokens, timeline, state, reducedMotion } = useScene();
-  const index = state.lastStep[id];
-  const entry = index === undefined ? undefined : timeline.entries[index];
+  const entry = entryAt(timeline, state.lastStep[id]);
   const update = entry?.step.action === "update" ? entry : undefined;
 
   useEffect(() => {
@@ -20,7 +20,7 @@ function useUpdateFade(ref: RefObject<HTMLElement | null>, id: string) {
     if (!(update && node?.animate) || reducedMotion) {
       return;
     }
-    const role = tokens.roles.find((token) => token.role === update.step.role);
+    const role = findRole(tokens, update.step.role);
     node.animate(
       [
         { opacity: 0, transform: `scale(${role?.scaleFrom ?? 1})` },
@@ -34,8 +34,7 @@ function useUpdateFade(ref: RefObject<HTMLElement | null>, id: string) {
 /** Press an element (scale to `pressScale` and back) when the cursor clicks it. */
 function usePress(ref: RefObject<HTMLElement | null>, id: string) {
   const { scene, tokens, timeline, state, reducedMotion } = useScene();
-  const click =
-    state.lastClick === -1 ? undefined : timeline.entries[state.lastClick];
+  const click = entryAt(timeline, state.lastClick);
   const target = scene.cursor?.targets.find(
     (entry) => entry.id === click?.step.target
   );
@@ -74,7 +73,7 @@ export function Element({
   rect: Rect;
 }) {
   const { tokens, theme, state } = useScene();
-  const unit = useUnit();
+  const unit = usePxToCqw();
   const visibility = useVisibility(element.id);
   const ref = useRef<HTMLDivElement>(null);
   const trailingRef = useRef<HTMLSpanElement>(null);

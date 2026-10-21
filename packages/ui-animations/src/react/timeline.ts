@@ -20,7 +20,8 @@ export type Timeline = {
   totalMs: number;
 };
 
-function findRole(
+/** One role's token, or `undefined` if the tokens lack it. */
+export function findRole(
   tokens: DesignTokens,
   role: SceneStep["role"]
 ): MotionRoleToken | undefined {
@@ -84,6 +85,14 @@ export function buildTimeline(
   }
 
   return { entries, totalMs: clock };
+}
+
+/** The entry at `index`; `undefined` for -1 or no index. */
+export function entryAt(
+  timeline: Timeline,
+  index: number | undefined
+): TimelineEntry | undefined {
+  return index === undefined || index < 0 ? undefined : timeline.entries[index];
 }
 
 /** What the scene shows after some number of steps have landed. */

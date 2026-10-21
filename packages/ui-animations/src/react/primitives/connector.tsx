@@ -1,6 +1,6 @@
 import type { SceneConnector } from "../../scene-spec";
 import { anchorRect, type Rect } from "../layout";
-import { entryFor, useScene, useVisibility } from "../context";
+import { entryFor, transitionFor, useScene, useVisibility } from "../context";
 
 /** Default travel time for connector dots when no step times the line. */
 const DOT_TRAVEL_MS = 1600;
@@ -59,12 +59,18 @@ export function Connector({ connector }: { connector: SceneConnector }) {
         transition:
           state.lastStep[connector.id] === undefined || !entry
             ? undefined
-            : `stroke-dashoffset ${entry.durationMs}ms ${entry.easing}, opacity ${entry.durationMs}ms ${entry.easing}`,
+            : transitionFor(entry, ["stroke-dashoffset"]),
       };
   const travelMs = entry?.durationMs ?? DOT_TRAVEL_MS;
 
   return (
-    <g data-connector={connector.id} style={{ opacity: visibility.opacity }}>
+    <g
+      data-connector=""
+      style={{
+        opacity: visibility.opacity,
+        transition: visibility.transition,
+      }}
+    >
       <path
         d={path}
         fill="none"

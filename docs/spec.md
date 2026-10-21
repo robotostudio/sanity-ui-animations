@@ -289,3 +289,7 @@ animations.
 - **Assumption (confirm with Jono):** Intro scenes play once on mount (not on
   scroll into view). Ambient scenes hold their final state 2s, fade out over
   400ms and loop.
+- **Assumption (confirm with Jono):** Only `click` steps click. The renderer
+  ignores `CursorTarget.click`, which would click a second time in scenes
+  like the checkout fixture that carry both. The release eases on the press
+  curve, because CSS and WAAPI cannot run the `pop` spring.

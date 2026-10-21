@@ -1,19 +1,19 @@
 import type { SceneWindow } from "../../scene-spec";
 import { LAYOUT, elementRects } from "../layout";
-import { useScene, useUnit, useVisibility, withOpacity } from "../context";
+import { useScene, usePxToCqw, useVisibility, withOpacity } from "../context";
 import { Element } from "./element";
 
 /**
  * A rounded glass panel with macOS chrome: three neutral traffic lights,
  * then the title (or, for `browser`, a centred address field). No shadow.
  */
-export function Window({ window }: { window: SceneWindow }) {
+export function Window({ sceneWindow }: { sceneWindow: SceneWindow }) {
   const { tokens, theme, scene } = useScene();
-  const unit = useUnit();
-  const visibility = useVisibility(window.id);
+  const unit = usePxToCqw();
+  const visibility = useVisibility(sceneWindow.id);
   const chrome = tokens.windowChrome;
-  const rects = elementRects(window);
-  const lightColor = window.active
+  const rects = elementRects(sceneWindow);
+  const lightColor = sceneWindow.active
     ? theme.trafficLight.active
     : theme.trafficLight.inactive;
   // The bright top edge: whichever of card and hairline is the lighter tone
@@ -22,13 +22,13 @@ export function Window({ window }: { window: SceneWindow }) {
 
   return (
     <div
-      data-window={window.kind}
+      data-window={sceneWindow.kind}
       style={{
         position: "absolute",
-        left: unit(window.x),
-        top: unit(window.y),
-        width: unit(window.w),
-        height: unit(window.h),
+        left: unit(sceneWindow.x),
+        top: unit(sceneWindow.y),
+        width: unit(sceneWindow.w),
+        height: unit(sceneWindow.h),
         boxSizing: "border-box",
         borderRadius: unit(chrome.cornerRadiusPx),
         border: `1px solid ${theme.hairline}`,
@@ -59,7 +59,8 @@ export function Window({ window }: { window: SceneWindow }) {
           style={{
             position: "absolute",
             left: unit(chrome.trafficLightInsetPx),
-            display: "flex",
+            display: "grid",
+            gridAutoFlow: "column",
             gap: unit(chrome.trafficLightGapPx),
           }}
         >
@@ -83,7 +84,7 @@ export function Window({ window }: { window: SceneWindow }) {
             whiteSpace: "nowrap",
             color: theme.secondaryText,
             fontSize: unit(12),
-            ...(window.kind === "browser"
+            ...(sceneWindow.kind === "browser"
               ? {
                   paddingInline: unit(12),
                   lineHeight: unit(24),
@@ -93,10 +94,10 @@ export function Window({ window }: { window: SceneWindow }) {
               : {}),
           }}
         >
-          {window.title}
+          {sceneWindow.title}
         </span>
       </div>
-      {window.elements.map((element) => {
+      {sceneWindow.elements.map((element) => {
         const rect = rects.get(element.id);
         if (!rect) {
           return null;
@@ -105,7 +106,11 @@ export function Window({ window }: { window: SceneWindow }) {
           <Element
             element={element}
             key={element._key}
-            rect={{ ...rect, x: rect.x - window.x, y: rect.y - window.y }}
+            rect={{
+              ...rect,
+              x: rect.x - sceneWindow.x,
+              y: rect.y - sceneWindow.y,
+            }}
           />
         );
       })}
