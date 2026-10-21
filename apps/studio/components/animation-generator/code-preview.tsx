@@ -9,6 +9,9 @@
 export const CODE_PREVIEW_SANDBOX = "allow-scripts";
 
 const BABEL_URL = "https://unpkg.com/@babel/standalone@7.28.4/babel.min.js";
+/** Subresource integrity for `BABEL_URL`; update both together. */
+const BABEL_INTEGRITY =
+  "sha384-tL0JdJBWAk5nHKZhc/dtWf7bZRpYP13x4HjH85NrwCr/JkBnrZ7RNBOAdDzJlpof";
 
 const IMPORT_MAP = {
   imports: {
@@ -32,7 +35,7 @@ const scriptLiteral = (value: string) =>
  * Studio itself.
  */
 export function codePreviewDocument(reactCode: string): string {
-  const component = /export default function (\w+)/.exec(reactCode)?.[1];
+  const component = /^export default function (\w+)/m.exec(reactCode)?.[1];
   const mount = component
     ? `\nimport { createRoot as __createRoot } from "react-dom/client";\n__createRoot(document.getElementById("root")).render(<${component} />);\n`
     : "";
@@ -43,7 +46,7 @@ export function codePreviewDocument(reactCode: string): string {
 <meta charset="utf-8">
 <style>html,body{margin:0}pre{margin:0;padding:12px;font:12px/1.5 ui-monospace,monospace;color:#b3261e;white-space:pre-wrap}</style>
 <script type="importmap">${JSON.stringify(IMPORT_MAP)}</script>
-<script src="${BABEL_URL}"></script>
+<script src="${BABEL_URL}" integrity="${BABEL_INTEGRITY}" crossorigin="anonymous"></script>
 </head>
 <body>
 <div id="root"></div>
@@ -56,7 +59,7 @@ export function codePreviewDocument(reactCode: string): string {
   }
   window.addEventListener("error", function (event) { show(event.message); });
   var source = ${scriptLiteral(reactCode)};
-  var mount = ${JSON.stringify(mount)};
+  var mount = ${scriptLiteral(mount)};
   if (!mount) { show("This code has no default export to preview."); return; }
   try {
     var compiled = Babel.transform(source + mount, {

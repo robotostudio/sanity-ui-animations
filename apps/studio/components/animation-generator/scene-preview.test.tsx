@@ -106,7 +106,23 @@ describe("ScenePreview: code preview", () => {
       "";
     expect(srcdoc).not.toContain("alert(1)</script>");
     expect(srcdoc).toContain("\\u003c/script>\\u003cscript>alert(1)");
-    expect(srcdoc).toContain("<SceneAnimation />");
+    expect(srcdoc).toContain("\\u003cSceneAnimation />");
+  });
+
+  it("goes back to the scene when the compiled code disappears", () => {
+    const { rerender } = renderPreview({ scene: checkoutScene, reactCode });
+    openCodePreview();
+
+    rerender(
+      <ThemeProvider theme={studioTheme}>
+        <ScenePreview scene={checkoutScene} />
+      </ThemeProvider>
+    );
+
+    expect(document.querySelector("iframe")).toBeNull();
+    expect(
+      screen.getByRole("tab", { name: "Preview" }).getAttribute("aria-selected")
+    ).toBe("true");
   });
 
   it("disables the tab until there is compiled code", () => {

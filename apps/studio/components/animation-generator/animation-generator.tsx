@@ -7,6 +7,9 @@ import { Button, Card, Flex, Spinner, Stack, Text } from "@sanity/ui";
 import { useState } from "react";
 import type { SanityClient } from "sanity";
 
+/** Deployed schema id; unset falls back to the pipeline's default. */
+const schemaId = process.env.SANITY_STUDIO_SCHEMA_ID || undefined;
+
 export type AnimationGeneratorProps = {
   /** A `useClient({ apiVersion: "vX" })` client: Agent Actions need `vX`. */
   client: SanityClient;
@@ -50,7 +53,7 @@ export function AnimationGenerator({
         client,
         documentId,
         mode,
-        schemaId: process.env.SANITY_STUDIO_SCHEMA_ID || undefined,
+        schemaId,
         onProgress: ({ message }) => setState({ status: "running", message }),
       });
       setState(

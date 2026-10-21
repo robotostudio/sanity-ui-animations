@@ -19,7 +19,7 @@ import {
   TabPanel,
   Text,
 } from "@sanity/ui";
-import { Component, type ReactNode, useMemo, useState } from "react";
+import { Component, type ReactNode, useId, useMemo, useState } from "react";
 
 import { CodePreview } from "./code-preview";
 
@@ -38,7 +38,11 @@ type PreviewTab = "scene" | "code";
  * it. It renders data, never code. See docs/spec.md, "User flow" step 3.
  */
 export function ScenePreview({ scene, reactCode }: ScenePreviewProps) {
-  const [tab, setTab] = useState<PreviewTab>("scene");
+  const [selectedTab, setTab] = useState<PreviewTab>("scene");
+  // Falls back to the scene if the code goes away while its tab is open.
+  const tab: PreviewTab =
+    selectedTab === "code" && reactCode ? "code" : "scene";
+  const ids = useId();
   // Validate the stored value as it is (like the field's `Rule.custom`), but
   // render a normalised copy so a half-edited scene still draws.
   const preview = useMemo(
@@ -67,16 +71,16 @@ export function ScenePreview({ scene, reactCode }: ScenePreviewProps) {
       <Stack gap={2}>
         <TabList gap={1}>
           <Tab
-            aria-controls="animation-preview-scene"
-            id="animation-preview-scene-tab"
+            aria-controls={`${ids}-scene`}
+            id={`${ids}-scene-tab`}
             label="Preview"
             onClick={() => setTab("scene")}
             selected={tab === "scene"}
           />
           <Tab
-            aria-controls="animation-preview-code"
+            aria-controls={`${ids}-code`}
             disabled={!reactCode}
-            id="animation-preview-code-tab"
+            id={`${ids}-code-tab`}
             label="Code preview"
             onClick={() => setTab("code")}
             selected={tab === "code"}
@@ -85,17 +89,11 @@ export function ScenePreview({ scene, reactCode }: ScenePreviewProps) {
         <Card border overflow="hidden" radius={2}>
           {tab === "code" && reactCode ? (
             // Mounted only while the tab is open: the frame runs code.
-            <TabPanel
-              aria-labelledby="animation-preview-code-tab"
-              id="animation-preview-code"
-            >
+            <TabPanel aria-labelledby={`${ids}-code-tab`} id={`${ids}-code`}>
               <CodePreview reactCode={reactCode} />
             </TabPanel>
           ) : (
-            <TabPanel
-              aria-labelledby="animation-preview-scene-tab"
-              id="animation-preview-scene"
-            >
+            <TabPanel aria-labelledby={`${ids}-scene-tab`} id={`${ids}-scene`}>
               <PreviewBoundary scene={preview.normalized}>
                 <Scene scene={preview.normalized} tokens={DEFAULT_TOKENS} />
               </PreviewBoundary>

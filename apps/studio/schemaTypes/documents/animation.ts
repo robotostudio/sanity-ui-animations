@@ -555,7 +555,7 @@ export const animation = defineType({
       type: "text",
       rows: 12,
       description:
-        "React source compiled from the scene, for developers to copy. Regenerated automatically; never edited by hand and never run by the Studio or website.",
+        "React source compiled from the scene, for developers to copy. Regenerated automatically and never edited by hand. The website never runs it; the Studio's Code preview runs it only in a sandboxed frame.",
       readOnly: true,
       hidden: hiddenUnlessAdvanced,
     }),
