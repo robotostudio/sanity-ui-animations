@@ -12,6 +12,7 @@ import { notFound } from "next/navigation";
 
 import { AnimationView } from "@/components/animation-view";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { resolveAnimationScene } from "@/lib/animation-scene";
 import { getSEOMetadata } from "@/lib/seo";
 import { PLACEHOLDER_SLUG } from "@/utils";
 
@@ -37,11 +38,13 @@ export async function generateMetadata({
 }: {
   params: Promise<AnimationParams>;
 }): Promise<Metadata> {
+  // Shares the page's cached published fetch rather than
+  // `sanityFetchMetadata`: this route never follows the draft perspective.
   const { slug } = await params;
   const data = await getPublishedAnimation(slug);
   return getSEOMetadata({
     title: data?.title,
-    description: data?.scene?.label,
+    description: data?.scene.renderable ? data.scene.scene.label : undefined,
     slug: `/animations/${slug}`,
   });
 }
@@ -73,9 +76,10 @@ export default async function AnimationSlugPage({
   );
 }
 
-// Cached published fetch; a miss lets the caller return a real 404. No stega:
-// steps refer to windows and elements by id, so encoded strings would break
-// every reference.
+// Cached published fetch, gated here so a refused scene is logged once per
+// cache fill rather than on every render; a miss lets the caller return a
+// real 404. No stega: steps refer to windows and elements by id, so encoded
+// strings would break every reference.
 async function getPublishedAnimation(slug: string) {
   "use cache";
   const { data } = await sanityFetch({
@@ -84,5 +88,12 @@ async function getPublishedAnimation(slug: string) {
     perspective: "published",
     stega: false,
   });
-  return data;
+  if (!data) {
+    return null;
+  }
+  const scene = resolveAnimationScene(data.scene);
+  if (!scene.renderable) {
+    logger.warn(`Refusing to render animation "${slug}"`, scene.errors);
+  }
+  return { title: data.title, scene };
 }

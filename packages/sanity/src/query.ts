@@ -370,14 +370,14 @@ export const queryRedirects = defineQuery(`
 
 // Animations are served published-only and without stega: scene strings are
 // ids that steps refer to, so invisible characters would break every lookup.
-const animationListFilter = `_type == "animation" && defined(slug.current) && defined(scene)`;
+const animationFilter = `_type == "animation" && defined(slug.current) && defined(scene)`;
 
 export const queryAnimationPaths = defineQuery(`
-  *[${animationListFilter}].slug.current
+  *[${animationFilter}].slug.current
 `);
 
 export const queryAnimationIndex = defineQuery(`
-  *[${animationListFilter}] | order(title asc){
+  *[${animationFilter}] | order(title asc){
     _id,
     title,
     "slug": slug.current
@@ -385,10 +385,8 @@ export const queryAnimationIndex = defineQuery(`
 `);
 
 export const queryAnimationBySlug = defineQuery(`
-  *[_type == "animation" && slug.current == $slug][0]{
-    _id,
+  *[${animationFilter} && slug.current == $slug][0]{
     title,
-    "slug": slug.current,
     scene
   }
 `);

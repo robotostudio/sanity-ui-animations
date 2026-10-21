@@ -2,6 +2,8 @@ import { checkoutScene } from "@sanity-ui-animations/ui-animations/fixtures/chec
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { resolveAnimationScene } from "@/lib/animation-scene";
+
 import { AnimationView } from "./animation-view";
 
 const brokenScene = {
@@ -19,7 +21,10 @@ const brokenScene = {
 describe("AnimationView", () => {
   it("renders a valid scene as one labelled image", () => {
     const html = renderToStaticMarkup(
-      <AnimationView scene={checkoutScene} title="Checkout" />
+      <AnimationView
+        scene={resolveAnimationScene(checkoutScene)}
+        title="Checkout"
+      />
     );
 
     expect(html).toContain('role="img"');
@@ -29,7 +34,10 @@ describe("AnimationView", () => {
 
   it("renders the neutral fallback, not the scene, when validation fails", () => {
     const html = renderToStaticMarkup(
-      <AnimationView scene={brokenScene} title="Checkout" />
+      <AnimationView
+        scene={resolveAnimationScene(brokenScene)}
+        title="Checkout"
+      />
     );
 
     expect(html).not.toContain('role="img"');
@@ -40,7 +48,7 @@ describe("AnimationView", () => {
 
   it("renders the fallback when the document has no scene", () => {
     const html = renderToStaticMarkup(
-      <AnimationView scene={null} title="Checkout" />
+      <AnimationView scene={resolveAnimationScene(null)} title="Checkout" />
     );
 
     expect(html).not.toContain('role="img"');

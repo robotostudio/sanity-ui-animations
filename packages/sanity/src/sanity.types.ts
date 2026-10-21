@@ -4308,11 +4308,9 @@ export type QueryAnimationIndexResult = Array<{
 
 // Source: ../../packages/sanity/src/query.ts
 // Variable: queryAnimationBySlug
-// Query: *[_type == "animation" && slug.current == $slug][0]{    _id,    title,    "slug": slug.current,    scene  }
+// Query: *[_type == "animation" && defined(slug.current) && defined(scene) && slug.current == $slug][0]{    title,    scene  }
 export type QueryAnimationBySlugResult = {
-  _id: string;
   title: string;
-  slug: string;
   scene: {
     sceneMode: "ambient" | "interactive" | "intro";
     theme: "dark" | "light";
@@ -4418,7 +4416,7 @@ declare global {
     '\n  *[_type == "redirect" && status == "active" && defined(source.current) && defined(destination.current)]{\n    "source":source.current, \n    "destination":destination.current, \n    "permanent" : permanent == "true"\n  }\n': QueryRedirectsResult;
     '\n  *[_type == "animation" && defined(slug.current) && defined(scene)].slug.current\n': QueryAnimationPathsResult;
     '\n  *[_type == "animation" && defined(slug.current) && defined(scene)] | order(title asc){\n    _id,\n    title,\n    "slug": slug.current\n  }\n': QueryAnimationIndexResult;
-    '\n  *[_type == "animation" && slug.current == $slug][0]{\n    _id,\n    title,\n    "slug": slug.current,\n    scene\n  }\n': QueryAnimationBySlugResult;
+    '\n  *[_type == "animation" && defined(slug.current) && defined(scene) && slug.current == $slug][0]{\n    title,\n    scene\n  }\n': QueryAnimationBySlugResult;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too

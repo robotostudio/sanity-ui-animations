@@ -313,6 +313,6 @@ animations.
   only, even in draft mode or Presentation; the Studio preview covers drafts.
   A published scene that now fails `validateScene` keeps its page and title
   but shows a neutral "isn't available" line in place of the scene, and logs
-  the issues server-side. The index lists every published animation with a
-  slug and a scene, ordered by title. The site uses `DEFAULT_TOKENS` until the
+  the issues server-side. Only documents with a slug and a scene are routed
+  (anything else 404s), and the index lists them by title. The site uses `DEFAULT_TOKENS` until the
   tokens ticket supplies the `designTokens` merge.
