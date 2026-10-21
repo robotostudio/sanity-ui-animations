@@ -5,6 +5,7 @@ import {
   SCENE_MODES,
   SCENE_THEMES,
   STEP_ACTIONS,
+  sceneValidation,
   WINDOW_KINDS,
 } from "@sanity-ui-animations/ui-animations";
 import { Clapperboard } from "lucide-react";
@@ -368,6 +369,12 @@ const scene = defineField({
   description:
     "The structured animation: square canvas, macOS windows with rows and cards, connectors, a cursor path and an ordered list of steps. Generated from the prompt; mirrors SceneSpec in @sanity-ui-animations/ui-animations.",
   hidden: hiddenUnlessAdvanced,
+  // validateScene's errors block publishing; its warnings are shown only.
+  // See docs/spec.md, "Auto-correct, then hard validation".
+  validation: (Rule) => [
+    Rule.custom((value) => sceneValidation(value, "error")),
+    Rule.custom((value) => sceneValidation(value, "warning")).warning(),
+  ],
   fields: [
     defineField({
       name: "sceneMode",
