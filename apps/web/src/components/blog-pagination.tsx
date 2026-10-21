@@ -1,4 +1,4 @@
-import { cn } from "@workspace/tailwind-config/utils";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 import Link from "next/link";
 
 export type PaginationProps = {

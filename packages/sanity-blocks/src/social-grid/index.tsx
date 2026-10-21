@@ -1,4 +1,4 @@
-import { BlockHeader } from "@workspace/sanity-blocks/internal/block-header";
+import { BlockHeader } from "@sanity-ui-animations/sanity-blocks/internal/block-header";
 import {
   FacebookIcon,
   GithubIcon,
@@ -8,12 +8,12 @@ import {
   SlackIcon,
   XLogoIcon,
   YoutubeIcon,
-} from "@workspace/sanity-blocks/internal/icons";
-import { sanitizeHref } from "@workspace/sanity-blocks/internal/safe-href";
+} from "@sanity-ui-animations/sanity-blocks/internal/icons";
+import { sanitizeHref } from "@sanity-ui-animations/sanity-blocks/internal/safe-href";
 import {
   SanityImage,
   type SanityImageData,
-} from "@workspace/sanity-blocks/internal/sanity-image";
+} from "@sanity-ui-animations/sanity-blocks/internal/sanity-image";
 import { ArrowRight } from "lucide-react";
 import { stegaClean } from "next-sanity";
 import Link from "next/link";

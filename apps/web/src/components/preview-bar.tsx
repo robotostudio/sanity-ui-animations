@@ -1,6 +1,6 @@
 "use client";
 
-import { Logger } from "@workspace/logger";
+import { Logger } from "@sanity-ui-animations/logger";
 import { useRouter } from "next/navigation";
 import type { FC } from "react";
 import { useTransition } from "react";

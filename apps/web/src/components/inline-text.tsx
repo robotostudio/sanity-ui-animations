@@ -5,7 +5,7 @@ import {
   type OverlayComponent,
   useDocuments,
 } from "@sanity/visual-editing/react";
-import { Logger } from "@workspace/logger";
+import { Logger } from "@sanity-ui-animations/logger";
 import { stegaClean } from "next-sanity";
 import { useEffect } from "react";
 

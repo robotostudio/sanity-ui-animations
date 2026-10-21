@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@workspace/tailwind-config/utils";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 import { Play } from "lucide-react";
 import { stegaClean } from "next-sanity";
 import dynamic from "next/dynamic";

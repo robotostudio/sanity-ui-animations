@@ -1,6 +1,6 @@
 "use client";
 
-import { CopyIcon } from "@workspace/sanity-blocks/internal/icons";
+import { CopyIcon } from "@sanity-ui-animations/sanity-blocks/internal/icons";
 import {
   COPY_STATUS_CLASS,
   type CopyStatus,
@@ -10,8 +10,8 @@ import {
   SWAP_TEXT_HIDDEN,
   SWAP_TEXT_SHOWN,
   useCopyToClipboard,
-} from "@workspace/sanity-blocks/internal/use-copy";
-import { cn } from "@workspace/tailwind-config/utils";
+} from "@sanity-ui-animations/sanity-blocks/internal/use-copy";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 import { Check, Loader2, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useCallback } from "react";

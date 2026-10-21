@@ -2,7 +2,7 @@ import {
   orderRankField,
   orderRankOrdering,
 } from "@sanity/orderable-document-list";
-import { BLOG_CATEGORY_OPTIONS } from "@workspace/sanity-blocks/internal/blog-categories";
+import { BLOG_CATEGORY_OPTIONS } from "@sanity-ui-animations/sanity-blocks/internal/blog-categories";
 import { FileText } from "lucide-react";
 import { defineArrayMember, defineField, defineType } from "sanity";
 

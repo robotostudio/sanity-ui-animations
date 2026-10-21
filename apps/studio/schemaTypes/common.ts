@@ -13,7 +13,7 @@ export {
   buttonsField,
   iconField,
   imageWithAltField,
-} from "@workspace/sanity-blocks/internal/schema-fields";
+} from "@sanity-ui-animations/sanity-blocks/internal/schema-fields";
 
 export const pageBuilderField = defineField({
   name: "pageBuilder",

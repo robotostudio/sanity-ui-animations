@@ -1,4 +1,4 @@
-import { faqAccordionToJsonLd } from "@workspace/sanity-blocks/faq-accordion/json-ld";
+import { faqAccordionToJsonLd } from "@sanity-ui-animations/sanity-blocks/faq-accordion/json-ld";
 import { stegaClean } from "next-sanity";
 
 import { JsonLdScript } from "@/components/json-ld";

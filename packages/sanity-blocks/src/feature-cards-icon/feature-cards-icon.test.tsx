@@ -1,4 +1,4 @@
-import { FeatureCardsWithIcon } from "@workspace/sanity-blocks/feature-cards-icon/index";
+import { FeatureCardsWithIcon } from "@sanity-ui-animations/sanity-blocks/feature-cards-icon/index";
 import { renderToStaticMarkup } from "react-dom/server";
 
 test("FeatureCardsWithIcon renders the card list", () => {

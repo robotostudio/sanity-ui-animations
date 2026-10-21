@@ -17,17 +17,18 @@
   },
   "dependencies": {
     "@ai-sdk/mcp": "^2.0.60",
+    "@sanity-ui-animations/env": "workspace:*",
+    "@sanity-ui-animations/logger": "workspace:*",
+    "@sanity-ui-animations/sanity": "workspace:*",
+    "@sanity-ui-animations/sanity-blocks": "workspace:*",
+    "@sanity-ui-animations/tailwind-config": "workspace:*",
+    "@sanity-ui-animations/ui": "workspace:*",
+    "@sanity-ui-animations/ui-animations": "workspace:*",
     "@sanity/client": "catalog:",
     "@sanity/mutate": "^0.18.2",
     "@sanity/visual-editing": "^6.1.2",
     "@tanstack/react-query": "^5.104.0",
     "@vercel/analytics": "^2.0.1",
-    "@workspace/env": "workspace:*",
-    "@workspace/logger": "workspace:*",
-    "@workspace/sanity": "workspace:*",
-    "@workspace/sanity-blocks": "workspace:*",
-    "@workspace/tailwind-config": "workspace:*",
-    "@workspace/ui": "workspace:*",
     "ai": "^7.0.118",
     "fuse.js": "^7.5.0",
     "lucide-react": "catalog:",
@@ -45,7 +46,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@workspace/typescript-config": "workspace:*",
+    "@sanity-ui-animations/typescript-config": "workspace:*",
     "dotenv": "^17.4.2"
   }
 }

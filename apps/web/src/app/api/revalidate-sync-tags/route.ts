@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
-import { env } from "@workspace/env/server";
-import { Logger } from "@workspace/logger";
+import { env } from "@sanity-ui-animations/env/server";
+import { Logger } from "@sanity-ui-animations/logger";
 import { revalidateTag } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 

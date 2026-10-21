@@ -1,8 +1,8 @@
 import {
   getDynamicFetchOptions,
   sanityFetchMetadata,
-} from "@workspace/sanity/live";
-import { queryGlobalSeoSettings } from "@workspace/sanity/query";
+} from "@sanity-ui-animations/sanity/live";
+import { queryGlobalSeoSettings } from "@sanity-ui-animations/sanity/query";
 import type { Metadata } from "next";
 
 import type { Maybe } from "@/types";

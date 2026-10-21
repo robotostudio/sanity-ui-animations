@@ -1,6 +1,6 @@
-import { BlockHeader } from "@workspace/sanity-blocks/internal/block-header";
-import type { RichTextValue } from "@workspace/sanity-blocks/internal/rich-text";
-import { RichText } from "@workspace/sanity-blocks/internal/rich-text";
+import { BlockHeader } from "@sanity-ui-animations/sanity-blocks/internal/block-header";
+import type { RichTextValue } from "@sanity-ui-animations/sanity-blocks/internal/rich-text";
+import { RichText } from "@sanity-ui-animations/sanity-blocks/internal/rich-text";
 
 import { MuxVideo, type MuxVideoOptions } from "../internal/mux-video";
 import { type MuxVideoData, muxPlaybackId } from "../internal/mux";

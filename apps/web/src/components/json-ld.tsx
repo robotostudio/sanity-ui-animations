@@ -1,8 +1,8 @@
-import { urlFor } from "@workspace/sanity/client";
+import { urlFor } from "@sanity-ui-animations/sanity/client";
 import type {
   QueryBlogSlugPageDataResult,
   QuerySettingsDataResult,
-} from "@workspace/sanity/types";
+} from "@sanity-ui-animations/sanity/types";
 import { stegaClean } from "next-sanity";
 import type {
   Article,

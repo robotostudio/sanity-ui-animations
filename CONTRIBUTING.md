@@ -47,7 +47,7 @@ If you touched a Sanity schema, also run `pnpm type` and commit the regenerated
   either.
 - File names are kebab-case; `.tsx` for React components, `.ts` for everything
   else.
-- Use the `Logger` class from `@workspace/logger` instead of `console.*`.
+- Use the `Logger` class from `@sanity-ui-animations/logger` instead of `console.*`.
 - Adding a page-builder block touches several files in a fixed order — follow
   the checklist in [CLAUDE.md](CLAUDE.md#page-builder-pattern).
 

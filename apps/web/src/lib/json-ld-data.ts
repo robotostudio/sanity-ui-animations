@@ -1,7 +1,7 @@
 "use cache";
 
-import { sanityFetch } from "@workspace/sanity/live";
-import { querySettingsData } from "@workspace/sanity/query";
+import { sanityFetch } from "@sanity-ui-animations/sanity/live";
+import { querySettingsData } from "@sanity-ui-animations/sanity/query";
 
 import { handleErrors } from "@/utils";
 

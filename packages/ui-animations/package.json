@@ -1,0 +1,23 @@
+{
+  "name": "@sanity-ui-animations/ui-animations",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Scene contract for sanity-ui-animations: the SceneSpec type, design tokens, and the normalise / validate / compile entry points shared by the Studio and the website.",
+  "scripts": {
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@sanity-ui-animations/typescript-config": "workspace:*",
+    "typescript": "catalog:"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./scene-spec": "./src/scene-spec.ts",
+    "./tokens": "./src/tokens.ts",
+    "./fixtures/*": "./src/fixtures/*.ts"
+  }
+}

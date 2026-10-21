@@ -1,4 +1,4 @@
-import { blockSchemas } from "@workspace/sanity-blocks";
+import { blockSchemas } from "@sanity-ui-animations/sanity-blocks";
 import { defineArrayMember, defineType } from "sanity";
 
 export const pagebuilderBlockTypes = blockSchemas.map(({ name }) => ({

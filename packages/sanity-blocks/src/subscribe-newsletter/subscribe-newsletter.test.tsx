@@ -1,4 +1,4 @@
-import { SubscribeNewsletter } from "@workspace/sanity-blocks/subscribe-newsletter/index";
+import { SubscribeNewsletter } from "@sanity-ui-animations/sanity-blocks/subscribe-newsletter/index";
 import { renderToStaticMarkup } from "react-dom/server";
 
 test("SubscribeNewsletter renders text sections", () => {

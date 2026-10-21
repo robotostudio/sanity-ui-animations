@@ -1,4 +1,4 @@
-import { logoLinkItem } from "@workspace/sanity-blocks/internal/schema-fields";
+import { logoLinkItem } from "@sanity-ui-animations/sanity-blocks/internal/schema-fields";
 import { Images } from "lucide-react";
 import { defineField, defineType } from "sanity";
 

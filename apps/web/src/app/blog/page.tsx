@@ -1,4 +1,4 @@
-import { getDynamicFetchOptions } from "@workspace/sanity/live";
+import { getDynamicFetchOptions } from "@sanity-ui-animations/sanity/live";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";

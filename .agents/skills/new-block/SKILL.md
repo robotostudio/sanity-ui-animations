@@ -97,12 +97,12 @@ export const pricingTableGroqProjection = /* groq */ `
 ```
 
 **`index.tsx`** — the styled React component (Tailwind v4 +
-`@workspace/ui`). Define an explicit props interface with all fields
+`@sanity-ui-animations/ui`). Define an explicit props interface with all fields
 optional/nullable — the web app asserts the generated query type onto it, so
 looser is safer. Conventions: wrap in `<section>` with its own
 `<div className="container">` rail, prefer `grid` over `flex` unless two
 siblings, use `SanityImage` / `SanityButtons` / `RichText` / `BlockEyebrow`
-from `@workspace/sanity-blocks/internal/*`, and give the `<section>` the shared
+from `@sanity-ui-animations/sanity-blocks/internal/*`, and give the `<section>` the shared
 `block-section` class (`hero` and `logo-cloud` are the two that opt out, both
 with their own full-bleed layout).
 
@@ -113,9 +113,9 @@ same block twice gets a duplicate `id`. Keep the convention, and drop the `id`
 if the block is one an editor is likely to repeat:
 
 ```tsx
-import { BlockEyebrow } from "@workspace/sanity-blocks/internal/block-eyebrow";
-import type { RichTextValue } from "@workspace/sanity-blocks/internal/rich-text";
-import { RichText } from "@workspace/sanity-blocks/internal/rich-text";
+import { BlockEyebrow } from "@sanity-ui-animations/sanity-blocks/internal/block-eyebrow";
+import type { RichTextValue } from "@sanity-ui-animations/sanity-blocks/internal/rich-text";
+import { RichText } from "@sanity-ui-animations/sanity-blocks/internal/rich-text";
 
 export interface PricingTableProps {
   eyebrow?: string | null;
@@ -196,7 +196,7 @@ No `package.json` edit is needed: the package's wildcard exports
 ### 3. Add the GROQ projection to the shared query
 
 In `packages/sanity/src/query.ts`: import
-`<camel>GroqProjection` from `@workspace/sanity-blocks/<kebab>/<kebab>.groq`
+`<camel>GroqProjection` from `@sanity-ui-animations/sanity-blocks/<kebab>/<kebab>.groq`
 and add it to `pageBuilderFragment` alongside the existing projections.
 
 ### 4. Regenerate Sanity types
@@ -221,7 +221,7 @@ automatically — never hand-write Sanity shapes.
 ### 5. Register the web renderer
 
 In `apps/web/src/components/pagebuilder.tsx`: import the component from
-`@workspace/sanity-blocks/<kebab>/index` and add a `case` to
+`@sanity-ui-animations/sanity-blocks/<kebab>/index` and add a `case` to
 `renderBlockComponent`:
 
 ```tsx
@@ -248,7 +248,7 @@ without it; the menu tile just has no preview image.
 ### 8. Verify
 
 ```bash
-pnpm --filter @workspace/sanity-blocks test   # component + markdown tests
+pnpm --filter @sanity-ui-animations/sanity-blocks test   # component + markdown tests
 pnpm check-types
 pnpm format                                   # Biome, auto-fix
 pnpm lint

@@ -1,11 +1,11 @@
-import "@workspace/ui/globals.css";
+import "@sanity-ui-animations/ui/globals.css";
 
 import { Analytics } from "@vercel/analytics/next";
 import {
   type DynamicFetchOptions,
   getDynamicFetchOptions,
   SanityLive,
-} from "@workspace/sanity/live";
+} from "@sanity-ui-animations/sanity/live";
 import { Geist, Geist_Mono } from "next/font/google";
 import { draftMode } from "next/headers";
 import { Suspense } from "react";

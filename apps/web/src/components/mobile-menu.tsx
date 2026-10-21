@@ -1,13 +1,13 @@
 "use client";
 
-import { SanityButtons } from "@workspace/sanity-blocks/internal/sanity-buttons";
-import { cn } from "@workspace/tailwind-config/utils";
+import { SanityButtons } from "@sanity-ui-animations/sanity-blocks/internal/sanity-buttons";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@workspace/ui/components/accordion";
+} from "@sanity-ui-animations/ui/components/accordion";
 import {
   Drawer,
   DrawerBackdrop,
@@ -18,9 +18,9 @@ import {
   DrawerTitle,
   DrawerTrigger,
   DrawerViewport,
-} from "@workspace/ui/components/base-drawer";
-import { Button } from "@workspace/ui/components/button";
-import { useMediaQuery } from "@workspace/ui/hooks/use-media-query";
+} from "@sanity-ui-animations/ui/components/base-drawer";
+import { Button } from "@sanity-ui-animations/ui/components/button";
+import { useMediaQuery } from "@sanity-ui-animations/ui/hooks/use-media-query";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

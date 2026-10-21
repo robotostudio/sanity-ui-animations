@@ -1,5 +1,5 @@
-import { Logger } from "@workspace/logger";
-import { cn } from "@workspace/tailwind-config/utils";
+import { Logger } from "@sanity-ui-animations/logger";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 import Link from "next/link";
 import {
   PortableText,

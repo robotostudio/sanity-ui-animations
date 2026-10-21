@@ -1,7 +1,7 @@
 "use client";
 
-import { SanityButtons } from "@workspace/sanity-blocks/internal/sanity-buttons";
-import { cn } from "@workspace/tailwind-config/utils";
+import { SanityButtons } from "@sanity-ui-animations/sanity-blocks/internal/sanity-buttons";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -9,7 +9,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "@workspace/ui/components/navigation-menu";
+} from "@sanity-ui-animations/ui/components/navigation-menu";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";

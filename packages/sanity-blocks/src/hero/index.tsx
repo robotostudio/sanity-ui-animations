@@ -1,14 +1,14 @@
-import { BlockEyebrow } from "@workspace/sanity-blocks/internal/block-eyebrow";
-import type { RichTextValue } from "@workspace/sanity-blocks/internal/rich-text";
-import { RichText } from "@workspace/sanity-blocks/internal/rich-text";
-import type { ButtonProps } from "@workspace/sanity-blocks/internal/sanity-buttons";
-import { SanityButtons } from "@workspace/sanity-blocks/internal/sanity-buttons";
-import type { SanityImageData } from "@workspace/sanity-blocks/internal/sanity-image";
+import { BlockEyebrow } from "@sanity-ui-animations/sanity-blocks/internal/block-eyebrow";
+import type { RichTextValue } from "@sanity-ui-animations/sanity-blocks/internal/rich-text";
+import { RichText } from "@sanity-ui-animations/sanity-blocks/internal/rich-text";
+import type { ButtonProps } from "@sanity-ui-animations/sanity-blocks/internal/sanity-buttons";
+import { SanityButtons } from "@sanity-ui-animations/sanity-blocks/internal/sanity-buttons";
+import type { SanityImageData } from "@sanity-ui-animations/sanity-blocks/internal/sanity-image";
 import {
   getImageDimensions,
   SanityImage,
-} from "@workspace/sanity-blocks/internal/sanity-image";
-import { cn } from "@workspace/tailwind-config/utils";
+} from "@sanity-ui-animations/sanity-blocks/internal/sanity-image";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 
 import { muxPlaybackId, muxThumbnailUrl } from "../internal/mux";
 import type { HeroVideoData, HeroVideoVariant } from "./hero-video";

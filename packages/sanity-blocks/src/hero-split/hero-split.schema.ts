@@ -1,7 +1,7 @@
 import {
   buttonsField,
   imageWithAltField,
-} from "@workspace/sanity-blocks/internal/schema-fields";
+} from "@sanity-ui-animations/sanity-blocks/internal/schema-fields";
 import { Columns2 } from "lucide-react";
 import { defineField, defineType } from "sanity";
 

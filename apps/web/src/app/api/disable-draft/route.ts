@@ -1,4 +1,4 @@
-import { internalPathOnly } from "@workspace/sanity-blocks/internal/safe-href";
+import { internalPathOnly } from "@sanity-ui-animations/sanity-blocks/internal/safe-href";
 import { draftMode } from "next/headers";
 import { redirect } from "next/navigation";
 import type { NextRequest } from "next/server";

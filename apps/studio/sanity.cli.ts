@@ -1,4 +1,4 @@
-import { Logger } from "@workspace/logger";
+import { Logger } from "@sanity-ui-animations/logger";
 import "dotenv/config";
 import path from "node:path";
 import { defineCliConfig } from "sanity/cli";

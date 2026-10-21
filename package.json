@@ -1,29 +1,27 @@
 {
-  "name": "turbo-start-sanity",
+  "name": "sanity-ui-animations",
   "version": "1.0.0",
   "private": true,
-  "description": "Open-source Sanity + Next.js starter: a pnpm/Turborepo monorepo with a Next.js 16 frontend, a Sanity Studio 6 workspace, a shared page-builder block library, and Visual Editing wired end to end.",
+  "description": "Prompt-to-UI-animation for Sanity Studio: editors describe a product flow, Sanity Agent Actions generate a structured scene spec, and a trusted primitive library renders it on-brand in the Studio and on a Next.js site.",
   "keywords": [
     "sanity",
-    "sanity-template",
+    "agent-actions",
+    "ui-animations",
+    "scenes",
     "nextjs",
     "turborepo",
     "monorepo",
-    "page-builder",
-    "visual-editing",
-    "cms",
-    "tailwindcss",
     "typescript"
   ],
   "license": "MIT",
   "author": "Roboto Studio (https://robotostudio.com)",
-  "homepage": "https://github.com/robotostudio/turbo-start-sanity#readme",
+  "homepage": "https://github.com/robotostudio/sanity-ui-animations#readme",
   "bugs": {
-    "url": "https://github.com/robotostudio/turbo-start-sanity/issues"
+    "url": "https://github.com/robotostudio/sanity-ui-animations/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/robotostudio/turbo-start-sanity.git"
+    "url": "git+https://github.com/robotostudio/sanity-ui-animations.git"
   },
   "scripts": {
     "build": "turbo run build",
@@ -38,11 +36,12 @@
     "check-types": "turbo run check-types",
     "type": "turbo run type",
     "test": "turbo run test",
-    "test:e2e": "turbo run test:e2e"
+    "test:e2e": "turbo run test:e2e",
+    "tokens:sync": "node --experimental-strip-types scripts/tokens-sync.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
-    "@workspace/typescript-config": "workspace:*",
+    "@sanity-ui-animations/typescript-config": "workspace:*",
     "turbo": "^2.11.5",
     "typescript": "catalog:"
   },

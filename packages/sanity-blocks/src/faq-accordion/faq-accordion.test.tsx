@@ -1,4 +1,4 @@
-import { FaqAccordion } from "@workspace/sanity-blocks/faq-accordion/index";
+import { FaqAccordion } from "@sanity-ui-animations/sanity-blocks/faq-accordion/index";
 import { renderToStaticMarkup } from "react-dom/server";
 
 test("FaqAccordion renders questions and optional link", () => {

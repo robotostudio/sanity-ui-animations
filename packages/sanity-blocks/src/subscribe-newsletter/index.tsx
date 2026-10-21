@@ -1,12 +1,12 @@
 "use client";
 
-import { BlockEyebrow } from "@workspace/sanity-blocks/internal/block-eyebrow";
-import type { RichTextValue } from "@workspace/sanity-blocks/internal/rich-text";
-import { RichText } from "@workspace/sanity-blocks/internal/rich-text";
-import type { SanityImageData } from "@workspace/sanity-blocks/internal/sanity-image";
-import { SanityImage } from "@workspace/sanity-blocks/internal/sanity-image";
-import { cn } from "@workspace/tailwind-config/utils";
-import { Button } from "@workspace/ui/components/button";
+import { BlockEyebrow } from "@sanity-ui-animations/sanity-blocks/internal/block-eyebrow";
+import type { RichTextValue } from "@sanity-ui-animations/sanity-blocks/internal/rich-text";
+import { RichText } from "@sanity-ui-animations/sanity-blocks/internal/rich-text";
+import type { SanityImageData } from "@sanity-ui-animations/sanity-blocks/internal/sanity-image";
+import { SanityImage } from "@sanity-ui-animations/sanity-blocks/internal/sanity-image";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
+import { Button } from "@sanity-ui-animations/ui/components/button";
 import { LoaderCircle } from "lucide-react";
 import type { ComponentProps } from "react";
 import { useFormStatus } from "react-dom";

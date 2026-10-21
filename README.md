@@ -1,12 +1,16 @@
-# Turbo Start Sanity
+# sanity-ui-animations
 
-Turbo Start Sanity is an open-source Sanity template built as a `pnpm`
-monorepo with Turborepo, a Next.js 16 frontend, and a Sanity Studio 6
-workspace.
+Prompt-to-UI-animation for Sanity Studio. An editor describes a product flow
+("Show our checkout flow, and adding discounts to cart"), picks Fast or Good,
+and gets a live preview of an animated Scene in Roboto Studio's design and
+motion style. Generation runs only on Sanity Agent Actions. The AI writes a
+structured scene spec, never executable code, and a trusted primitive library
+renders it in the Studio and on the Next.js site at `/animations/[slug]`.
 
-It is designed for teams that want a production-ready page-builder starter with
-visual editing, shared packages, and a clear split between the web app and the
-CMS.
+The design is in [docs/spec.md](docs/spec.md), and the scene contract is in
+`packages/ui-animations`. The repo is built on
+[Turbo Start Sanity](https://github.com/robotostudio/turbo-start-sanity), and
+the rest of this README describes that base.
 
 ![Turbo Start Sanity](https://raw.githubusercontent.com/robotostudio/turbo-start-sanity/main/assets/og-image.png)
 
@@ -20,6 +24,8 @@ CMS.
   React renderers, Markdown serializers, and tests
 - `packages/sanity`: shared Sanity client, live query helpers, GROQ queries,
   the `urlFor` image URL helper, and the generated Sanity types
+- `packages/ui-animations`: the scene contract (`SceneSpec` types, design
+  tokens, a reference fixture) shared by the Studio and the website
 - `packages/ui`, `packages/tailwind-config`, `packages/env`,
   `packages/logger`, `packages/typescript-config`: shared workspace packages for
   UI, styling, env validation, logging, and TypeScript config
@@ -94,7 +100,7 @@ cp apps/web/.env.example apps/web/.env
 cp apps/studio/.env.example apps/studio/.env
 ```
 
-`apps/web/.env` — validated by `@workspace/env`, so the app refuses to start if
+`apps/web/.env` — validated by `@sanity-ui-animations/env`, so the app refuses to start if
 a required value is missing:
 
 | Variable | Required | Notes |
@@ -444,7 +450,7 @@ editing requests.
 ## Troubleshooting
 
 **`pnpm dev` exits immediately with an env validation error.** `apps/web` reads
-`@workspace/env` from `next.config.ts`, so every required variable in the table
+`@sanity-ui-animations/env` from `next.config.ts`, so every required variable in the table
 above must be present before the dev server starts — including
 `SANITY_API_WRITE_TOKEN`.
 

@@ -18,7 +18,7 @@ import { getPresentationUrl } from "@/utils/helper";
 
 const projectId = process.env.SANITY_STUDIO_PROJECT_ID ?? "";
 const dataset = process.env.SANITY_STUDIO_DATASET ?? "production";
-const title = process.env.SANITY_STUDIO_TITLE;
+const title = process.env.SANITY_STUDIO_TITLE || "Sanity UI Animations";
 
 // Singletons plus plugin-owned types are never created from the global "new
 // document" menu — they're reached through the structure or their plugin.

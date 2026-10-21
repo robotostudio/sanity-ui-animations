@@ -2,7 +2,7 @@ import {
   SanityImage,
   resolveAssetId,
   svgUrlFromAssetId,
-} from "@workspace/sanity-blocks/internal/sanity-image";
+} from "@sanity-ui-animations/sanity-blocks/internal/sanity-image";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 

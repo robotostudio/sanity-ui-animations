@@ -1,14 +1,14 @@
-import { env } from "@workspace/env/client";
-import { urlFor } from "@workspace/sanity/client";
+import { env } from "@sanity-ui-animations/env/client";
+import { urlFor } from "@sanity-ui-animations/sanity/client";
 import type {
   QueryAllBlogDataForSearchResult,
   QueryBlogSlugPageDataResult,
-} from "@workspace/sanity/types";
+} from "@sanity-ui-animations/sanity/types";
 import {
   imageToMarkdown,
   type MarkdownBlock,
   pageBuilderToMarkdown,
-} from "@workspace/sanity-blocks/internal/page-builder-to-markdown";
+} from "@sanity-ui-animations/sanity-blocks/internal/page-builder-to-markdown";
 import {
   absolutizeUrl,
   escapeMarkdown,
@@ -16,7 +16,7 @@ import {
   type MarkdownOptions,
   type PortableTextValue,
   portableTextToMarkdown,
-} from "@workspace/sanity-blocks/internal/portable-text-to-markdown";
+} from "@sanity-ui-animations/sanity-blocks/internal/portable-text-to-markdown";
 
 // Site origin for absolutizing internal `.md`/page links (already protocol-prefixed).
 const BASE_URL = env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL;

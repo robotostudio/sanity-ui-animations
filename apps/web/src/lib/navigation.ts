@@ -1,8 +1,11 @@
-import { type DynamicFetchOptions, sanityFetch } from "@workspace/sanity/live";
+import {
+  type DynamicFetchOptions,
+  sanityFetch,
+} from "@sanity-ui-animations/sanity/live";
 import {
   queryGlobalSeoSettings,
   queryNavbarData,
-} from "@workspace/sanity/query";
+} from "@sanity-ui-animations/sanity/query";
 
 /** The Settings singleton as its own cache entry, so the navbar and footer
  * share one fetch instead of baking private copies into their boundaries.

@@ -1,5 +1,5 @@
 {
-  "name": "@workspace/env",
+  "name": "@sanity-ui-animations/env",
   "version": "0.1.0",
   "type": "module",
   "private": true,
@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "@workspace/typescript-config": "workspace:*",
+    "@sanity-ui-animations/typescript-config": "workspace:*",
     "typescript": "catalog:"
   },
   "exports": {

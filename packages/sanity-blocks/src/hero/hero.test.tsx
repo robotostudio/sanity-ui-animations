@@ -1,4 +1,4 @@
-import { HeroBlock } from "@workspace/sanity-blocks/hero/index";
+import { HeroBlock } from "@sanity-ui-animations/sanity-blocks/hero/index";
 import { renderToStaticMarkup } from "react-dom/server";
 
 // The flag arms plain-string typing, honoured only where the element's one

@@ -1,4 +1,4 @@
-# @workspace/sanity
+# @sanity-ui-animations/sanity
 
 Shared Sanity CMS utilities for the monorepo: client configuration, GROQ queries, image URLs, and live preview.
 
@@ -6,16 +6,16 @@ Shared Sanity CMS utilities for the monorepo: client configuration, GROQ queries
 
 ```typescript
 // Client and image URL builder
-import { client, urlFor } from "@workspace/sanity/client";
+import { client, urlFor } from "@sanity-ui-animations/sanity/client";
 
 // GROQ queries
-import { queryHomePageData, queryBlogPaths } from "@workspace/sanity/query";
+import { queryHomePageData, queryBlogPaths } from "@sanity-ui-animations/sanity/query";
 
 // Live preview and data fetching
-import { sanityFetch, SanityLive } from "@workspace/sanity/live";
+import { sanityFetch, SanityLive } from "@sanity-ui-animations/sanity/live";
 
 // Generated TypeScript types
-import type { QueryHomePageDataResult } from "@workspace/sanity/types";
+import type { QueryHomePageDataResult } from "@sanity-ui-animations/sanity/types";
 ```
 
 ## Exports
@@ -40,8 +40,8 @@ Image handling is split across two packages:
 
 | Need | Where |
 | --- | --- |
-| A CDN URL with transforms, e.g. `urlFor(img).width(800).url()` | `@workspace/sanity/client` (here) |
-| Rendering an image — responsive srcset, LQIP, hotspot/crop, SVG passthrough | `SanityImage` in `@workspace/sanity-blocks/internal/sanity-image` |
+| A CDN URL with transforms, e.g. `urlFor(img).width(800).url()` | `@sanity-ui-animations/sanity/client` (here) |
+| Rendering an image — responsive srcset, LQIP, hotspot/crop, SVG passthrough | `SanityImage` in `@sanity-ui-animations/sanity-blocks/internal/sanity-image` |
 
 `SanityImage` also exports `resolveAssetId` (validates the asset ref and strips
 the stray `drafts.` prefix the media library can add) and `getImageDimensions`

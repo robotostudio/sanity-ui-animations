@@ -2,12 +2,12 @@ import {
   type DynamicFetchOptions,
   getDynamicFetchOptions,
   sanityFetch,
-} from "@workspace/sanity/live";
-import { queryFooterData } from "@workspace/sanity/query";
+} from "@sanity-ui-animations/sanity/live";
+import { queryFooterData } from "@sanity-ui-animations/sanity/query";
 import type {
   QueryFooterDataResult,
   QueryGlobalSeoSettingsResult,
-} from "@workspace/sanity/types";
+} from "@sanity-ui-animations/sanity/types";
 import {
   FacebookIcon,
   InstagramBrandIcon,
@@ -15,9 +15,9 @@ import {
   RedditBrandIcon,
   XBrandIcon,
   YoutubeIcon,
-} from "@workspace/sanity-blocks/internal/icons";
-import { normalizedLogoHeight } from "@workspace/sanity-blocks/internal/logo-height";
-import { SanityImage } from "@workspace/sanity-blocks/internal/sanity-image";
+} from "@sanity-ui-animations/sanity-blocks/internal/icons";
+import { normalizedLogoHeight } from "@sanity-ui-animations/sanity-blocks/internal/logo-height";
+import { SanityImage } from "@sanity-ui-animations/sanity-blocks/internal/sanity-image";
 import Link from "next/link";
 import { type CSSProperties, Fragment } from "react";
 

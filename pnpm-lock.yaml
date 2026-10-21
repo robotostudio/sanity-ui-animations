@@ -83,7 +83,7 @@ importers:
       '@biomejs/biome':
         specifier: 2.5.14
         version: 2.5.14
-      '@workspace/typescript-config':
+      '@sanity-ui-animations/typescript-config':
         specifier: workspace:*
         version: link:packages/typescript-config
       turbo:
@@ -98,6 +98,18 @@ importers:
       '@robotostudio/sanity-plugin-lucide-icon-picker':
         specifier: ^1.0.2
         version: 1.0.2(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sanity@6.16.0(@babel/core@7.29.7(supports-color@8.1.1))(@babel/runtime@7.29.7)(@noble/hashes@2.4.0)(@rolldown/plugin-babel@0.2.4(@babel/core@7.29.7(supports-color@8.1.1))(@babel/runtime@7.29.7)(rolldown@1.2.11)(vite@8.3.1(@types/node@24.19.0)(jiti@2.7.0)(yaml@2.9.1)))(@types/node@24.19.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(babel-plugin-react-compiler@1.0.0)(immer@11.1.18)(jiti@2.7.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rolldown@1.2.11)(styled-components@6.5.3(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(supports-color@8.1.1)(typescript@5.9.3)(vitest@4.1.11(@types/node@24.19.0)(jsdom@29.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@24.19.0)(jiti@2.7.0)(yaml@2.9.1))))(styled-components@6.5.3(react-dom@19.3.0(react@19.3.0))(react@19.3.0))
+      '@sanity-ui-animations/env':
+        specifier: workspace:*
+        version: link:../../packages/env
+      '@sanity-ui-animations/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
+      '@sanity-ui-animations/sanity-blocks':
+        specifier: workspace:*
+        version: link:../../packages/sanity-blocks
+      '@sanity-ui-animations/ui-animations':
+        specifier: workspace:*
+        version: link:../../packages/ui-animations
       '@sanity/assist':
         specifier: ^6.2.1
         version: 6.2.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sanity@6.16.0(@babel/core@7.29.7(supports-color@8.1.1))(@babel/runtime@7.29.7)(@noble/hashes@2.4.0)(@rolldown/plugin-babel@0.2.4(@babel/core@7.29.7(supports-color@8.1.1))(@babel/runtime@7.29.7)(rolldown@1.2.11)(vite@8.3.1(@types/node@24.19.0)(jiti@2.7.0)(yaml@2.9.1)))(@types/node@24.19.0)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(babel-plugin-react-compiler@1.0.0)(immer@11.1.18)(jiti@2.7.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rolldown@1.2.11)(styled-components@6.5.3(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(supports-color@8.1.1)(typescript@5.9.3)(vitest@4.1.11(@types/node@24.19.0)(jsdom@29.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@24.19.0)(jiti@2.7.0)(yaml@2.9.1))))(styled-components@6.5.3(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(vitest@4.1.11(@types/node@24.19.0)(jsdom@29.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@24.19.0)(jiti@2.7.0)(yaml@2.9.1)))
@@ -119,15 +131,6 @@ importers:
       '@sanity/vision':
         specifier: ^6.16.0
         version: 6.16.0(e15fd52402d2fdbadecac6be0f52a1cc)
-      '@workspace/env':
-        specifier: workspace:*
-        version: link:../../packages/env
-      '@workspace/logger':
-        specifier: workspace:*
-        version: link:../../packages/logger
-      '@workspace/sanity-blocks':
-        specifier: workspace:*
-        version: link:../../packages/sanity-blocks
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
@@ -183,6 +186,27 @@ importers:
       '@ai-sdk/mcp':
         specifier: ^2.0.60
         version: 2.0.62(zod@4.6.5)
+      '@sanity-ui-animations/env':
+        specifier: workspace:*
+        version: link:../../packages/env
+      '@sanity-ui-animations/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
+      '@sanity-ui-animations/sanity':
+        specifier: workspace:*
+        version: link:../../packages/sanity
+      '@sanity-ui-animations/sanity-blocks':
+        specifier: workspace:*
+        version: link:../../packages/sanity-blocks
+      '@sanity-ui-animations/tailwind-config':
+        specifier: workspace:*
+        version: link:../../packages/tailwind-config
+      '@sanity-ui-animations/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@sanity-ui-animations/ui-animations':
+        specifier: workspace:*
+        version: link:../../packages/ui-animations
       '@sanity/client':
         specifier: 'catalog:'
         version: 7.27.0
@@ -198,24 +222,6 @@ importers:
       '@vercel/analytics':
         specifier: ^2.0.1
         version: 2.0.1(next@16.4.0(@babel/core@7.29.7(supports-color@8.1.1))(@playwright/test@1.63.0)(@types/node@24.19.0)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
-      '@workspace/env':
-        specifier: workspace:*
-        version: link:../../packages/env
-      '@workspace/logger':
-        specifier: workspace:*
-        version: link:../../packages/logger
-      '@workspace/sanity':
-        specifier: workspace:*
-        version: link:../../packages/sanity
-      '@workspace/sanity-blocks':
-        specifier: workspace:*
-        version: link:../../packages/sanity-blocks
-      '@workspace/tailwind-config':
-        specifier: workspace:*
-        version: link:../../packages/tailwind-config
-      '@workspace/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
       ai:
         specifier: ^7.0.118
         version: 7.0.122(zod@4.6.5)
@@ -247,6 +253,9 @@ importers:
       '@playwright/test':
         specifier: ^1.63.0
         version: 1.63.0
+      '@sanity-ui-animations/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
       '@sanity/codegen':
         specifier: ^8.1.0
         version: 8.1.1(react@19.3.0)(supports-color@8.1.1)(typescript@5.9.3)
@@ -262,9 +271,6 @@ importers:
       '@types/react-dom':
         specifier: 'catalog:'
         version: 19.3.0(@types/react@19.3.0)
-      '@workspace/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/typescript-config
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
@@ -278,19 +284,19 @@ importers:
         specifier: 'catalog:'
         version: 4.6.5
     devDependencies:
+      '@sanity-ui-animations/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.0
-      '@workspace/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
 
   packages/logger:
     devDependencies:
-      '@workspace/typescript-config':
+      '@sanity-ui-animations/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       typescript:
@@ -299,6 +305,12 @@ importers:
 
   packages/sanity:
     dependencies:
+      '@sanity-ui-animations/env':
+        specifier: workspace:*
+        version: link:../env
+      '@sanity-ui-animations/sanity-blocks':
+        specifier: workspace:*
+        version: link:../sanity-blocks
       '@sanity/asset-utils':
         specifier: ^2.3.0
         version: 2.3.0
@@ -308,12 +320,6 @@ importers:
       '@sanity/image-url':
         specifier: ^2.1.1
         version: 2.1.1
-      '@workspace/env':
-        specifier: workspace:*
-        version: link:../env
-      '@workspace/sanity-blocks':
-        specifier: workspace:*
-        version: link:../sanity-blocks
       next-sanity:
         specifier: 13.3.4
         version: 13.3.4(5b78e6f3516be7a0c46889391546e91d)
@@ -321,15 +327,15 @@ importers:
         specifier: 'catalog:'
         version: 19.3.0
     devDependencies:
+      '@sanity-ui-animations/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.0
       '@types/react':
         specifier: 'catalog:'
         version: 19.3.0
-      '@workspace/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
       next:
         specifier: 16.4.0
         version: 16.4.0(@babel/core@7.29.7(supports-color@8.1.1))(@playwright/test@1.63.0)(@types/node@24.19.0)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -351,24 +357,24 @@ importers:
       '@portabletext/markdown':
         specifier: ^2.4.0
         version: 2.4.0
+      '@sanity-ui-animations/env':
+        specifier: workspace:*
+        version: link:../env
+      '@sanity-ui-animations/logger':
+        specifier: workspace:*
+        version: link:../logger
+      '@sanity-ui-animations/tailwind-config':
+        specifier: workspace:*
+        version: link:../tailwind-config
+      '@sanity-ui-animations/ui':
+        specifier: workspace:*
+        version: link:../ui
       '@sanity/client':
         specifier: 'catalog:'
         version: 7.27.0
       '@sanity/icons':
         specifier: ^5.2.1
         version: 5.2.3(react@19.3.0)
-      '@workspace/env':
-        specifier: workspace:*
-        version: link:../env
-      '@workspace/logger':
-        specifier: workspace:*
-        version: link:../logger
-      '@workspace/tailwind-config':
-        specifier: workspace:*
-        version: link:../tailwind-config
-      '@workspace/ui':
-        specifier: workspace:*
-        version: link:../ui
       lucide-react:
         specifier: 'catalog:'
         version: 1.48.0(react@19.3.0)
@@ -397,6 +403,9 @@ importers:
         specifier: ^1.6.9
         version: 1.6.9
     devDependencies:
+      '@sanity-ui-animations/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.0
@@ -409,9 +418,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^6.1.1
         version: 6.1.1(@rolldown/plugin-babel@0.2.4(@babel/core@7.29.7(supports-color@8.1.1))(@babel/runtime@7.29.7)(rolldown@1.2.11)(vite@8.3.1(@types/node@24.19.0)(jiti@2.7.0)(yaml@2.9.1)))(babel-plugin-react-compiler@1.0.0)(vite@8.3.1(@types/node@24.19.0)(jiti@2.7.0)(yaml@2.9.1))
-      '@workspace/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
       next:
         specifier: 16.4.0
         version: 16.4.0(@babel/core@7.29.7(supports-color@8.1.1))(@playwright/test@1.63.0)(@types/node@24.19.0)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -440,7 +446,7 @@ importers:
         specifier: 'catalog:'
         version: 1.4.0
     devDependencies:
-      '@workspace/typescript-config':
+      '@sanity-ui-animations/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       typescript:
@@ -457,12 +463,12 @@ importers:
       '@radix-ui/react-slot':
         specifier: ^1.3.3
         version: 1.3.3(@types/react@19.3.0)(react@19.3.0)
+      '@sanity-ui-animations/tailwind-config':
+        specifier: workspace:*
+        version: link:../tailwind-config
       '@tailwindcss/typography':
         specifier: ^0.5.20
         version: 0.5.20(tailwindcss@4.3.3)
-      '@workspace/tailwind-config':
-        specifier: workspace:*
-        version: link:../tailwind-config
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -479,6 +485,9 @@ importers:
         specifier: 'catalog:'
         version: 1.4.0
     devDependencies:
+      '@sanity-ui-animations/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.0
@@ -488,12 +497,18 @@ importers:
       '@types/react-dom':
         specifier: 'catalog:'
         version: 19.3.0(@types/react@19.3.0)
-      '@workspace/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
       tailwindcss:
         specifier: 'catalog:'
         version: 4.3.3
+
+  packages/ui-animations:
+    devDependencies:
+      '@sanity-ui-animations/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
 
 packages:
 
@@ -2693,6 +2708,7 @@ packages:
   '@sanity/ui@4.2.7':
     resolution: {integrity: sha512-P/np7nq69M3bmCjzbs2c60M06R4lga2z68ttFV6VFvMFcyw+3aa3qIb73L37e9GkhQS3vEWjnO1G3tcm5OI8sw==}
     engines: {node: '>=22.12'}
+    deprecated: Class names collide with @sanity/ui 4.4.4 (shipped in sanity@6.19.0) when both load on one page, breaking styles. Upgrade to @sanity/ui@^4.4.4.
     peerDependencies:
       react: ^19.2
       react-dom: ^19.2

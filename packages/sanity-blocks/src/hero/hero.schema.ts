@@ -2,7 +2,7 @@ import {
   buttonsField,
   definePortableTextField,
   muxVideoField,
-} from "@workspace/sanity-blocks/internal/schema-fields";
+} from "@sanity-ui-animations/sanity-blocks/internal/schema-fields";
 import { Star } from "lucide-react";
 import { defineField, defineType } from "sanity";
 

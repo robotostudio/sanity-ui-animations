@@ -1,4 +1,4 @@
-import { Logger } from "@workspace/logger";
+import { Logger } from "@sanity-ui-animations/logger";
 import {
   DRAFTS_WITHOUT_SESSION,
   type DynamicFetchOptions,
@@ -7,13 +7,16 @@ import {
   sanityFetch,
   sanityFetchMetadata,
   sanityFetchStaticParams,
-} from "@workspace/sanity/live";
-import { queryBlogPaths, queryBlogSlugPageData } from "@workspace/sanity/query";
+} from "@sanity-ui-animations/sanity/live";
+import {
+  queryBlogPaths,
+  queryBlogSlugPageData,
+} from "@sanity-ui-animations/sanity/query";
 import {
   RichText,
   type RichTextValue,
-} from "@workspace/sanity-blocks/internal/rich-text";
-import { SanityImage } from "@workspace/sanity-blocks/internal/sanity-image";
+} from "@sanity-ui-animations/sanity-blocks/internal/rich-text";
+import { SanityImage } from "@sanity-ui-animations/sanity-blocks/internal/sanity-image";
 import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";

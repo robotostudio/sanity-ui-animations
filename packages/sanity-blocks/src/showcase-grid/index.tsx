@@ -2,8 +2,8 @@ import {
   resolveAssetId,
   SanityImage,
   type SanityImageData,
-} from "@workspace/sanity-blocks/internal/sanity-image";
-import { cn } from "@workspace/tailwind-config/utils";
+} from "@sanity-ui-animations/sanity-blocks/internal/sanity-image";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 
 import { normalizedLogoHeight } from "../internal/logo-height";
 import { sanitizeHref } from "../internal/safe-href";

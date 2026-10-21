@@ -1,4 +1,4 @@
-import { definePortableTextField } from "@workspace/sanity-blocks/internal/schema-fields";
+import { definePortableTextField } from "@sanity-ui-animations/sanity-blocks/internal/schema-fields";
 import { Text } from "lucide-react";
 import { defineField, defineType } from "sanity";
 

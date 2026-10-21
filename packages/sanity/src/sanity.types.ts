@@ -709,6 +709,101 @@ export type Slug = {
   source?: string;
 };
 
+export type DesignTokens = {
+  _id: string;
+  _type: "designTokens";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  designMdUrl?: string;
+  motionMdUrl?: string;
+  syncedAt?: string;
+  roles?: Array<{
+    role?:
+      | "press"
+      | "enter"
+      | "exit"
+      | "move"
+      | "glide"
+      | "reveal"
+      | "drawer"
+      | "sweep";
+    use?: string;
+    curve?: string;
+    minMs?: number;
+    maxMs?: number;
+    staggerMs?: number;
+    scaleFrom?: number;
+    risePx?: number;
+    maxItems?: number;
+    _type: "motionRole";
+    _key: string;
+  }>;
+  springs?: Array<{
+    name?: "snap" | "pop" | "track";
+    use?: string;
+    duration?: number;
+    bounce?: number;
+    stiffness?: number;
+    damping?: number;
+    mass?: number;
+    _type: "spring";
+    _key: string;
+  }>;
+  sceneTokens?: {
+    light?: {
+      groundTones?: Array<string>;
+      glassFill?: string;
+      glassOpacity?: number;
+      card?: string;
+      hairline?: string;
+      text?: string;
+      secondaryText?: string;
+      tide?: string;
+      trafficLightActive?: string;
+      trafficLightInactive?: string;
+    };
+    dark?: {
+      groundTones?: Array<string>;
+      glassFill?: string;
+      glassOpacity?: number;
+      card?: string;
+      hairline?: string;
+      text?: string;
+      secondaryText?: string;
+      tide?: string;
+      trafficLightActive?: string;
+      trafficLightInactive?: string;
+    };
+  };
+  badges?: {
+    heightPx?: number;
+    dotPx?: number;
+    fillOpacity?: number;
+    success?: string;
+    warning?: string;
+    error?: string;
+    info?: string;
+    neutralFill?: string;
+    neutralBorder?: string;
+  };
+  tide?: {
+    color?: string;
+    textColor?: string;
+    maxPerScene?: number;
+  };
+  windowChrome?: {
+    cornerRadiusPx?: number;
+    backdropBlurPx?: number;
+    topEdgePx?: number;
+    trafficLightDiameterPx?: number;
+    trafficLightGapPx?: number;
+    trafficLightInsetPx?: number;
+  };
+  rawDesignMd?: string;
+  rawMotionMd?: string;
+};
+
 export type Navbar = {
   _id: string;
   _type: "navbar";
@@ -1023,6 +1118,114 @@ export type Blog = {
   seoHideFromLists?: boolean;
   ogTitle?: string;
   ogDescription?: string;
+};
+
+export type Animation = {
+  _id: string;
+  _type: "animation";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  slug: Slug;
+  prompt: string;
+  generationMode: "fast" | "good";
+  showAdvanced?: boolean;
+  scene?: {
+    sceneMode: "ambient" | "intro" | "interactive";
+    theme: "light" | "dark";
+    canvas?: {
+      size: number;
+    };
+    label: string;
+    windows?: Array<{
+      id: string;
+      title: string;
+      kind: "browser" | "app";
+      x: number;
+      y: number;
+      w: number;
+      h: number;
+      active?: boolean;
+      elements?: Array<{
+        id: string;
+        kind: "row" | "card" | "button";
+        label: string;
+        value?: string;
+        badge?: {
+          status: "success" | "warning" | "error" | "info" | "neutral";
+          label: string;
+        };
+        accent?: boolean;
+        _type: "sceneElement";
+        _key: string;
+      }>;
+      _type: "sceneWindow";
+      _key: string;
+    }>;
+    connectors?: Array<{
+      id: string;
+      from: {
+        windowId: string;
+        elementId?: string;
+      };
+      to: {
+        windowId: string;
+        elementId?: string;
+      };
+      dots?: boolean;
+      _type: "sceneConnector";
+      _key: string;
+    }>;
+    cursor?: {
+      start?: {
+        x?: number;
+        y?: number;
+      };
+      targets?: Array<{
+        id: string;
+        windowId: string;
+        elementId?: string;
+        click?: boolean;
+        _type: "cursorTarget";
+        _key: string;
+      }>;
+    };
+    steps?: Array<{
+      action: "enter" | "move" | "click" | "reveal" | "update" | "exit";
+      target: string;
+      role:
+        | "press"
+        | "enter"
+        | "exit"
+        | "move"
+        | "glide"
+        | "reveal"
+        | "drawer"
+        | "sweep";
+      delayMs: number;
+      durationMs?: number;
+      value?: string;
+      badge?: {
+        status: "success" | "warning" | "error" | "info" | "neutral";
+        label: string;
+      };
+      _type: "sceneStep";
+      _key: string;
+    }>;
+    stillStepKey?: string;
+  };
+  reactCode?: string;
+  generationLog?: Array<{
+    mode?: "fast" | "good";
+    calls?: number;
+    status?: "success" | "error";
+    error?: string;
+    durationMs?: number;
+    at?: string;
+    _type: "generationLogEntry";
+    _key: string;
+  }>;
 };
 
 export type SanityAssistInstructionTask = {
@@ -1429,6 +1632,7 @@ export type AllSanitySchemaTypes =
   | CustomUrl
   | Redirect
   | Slug
+  | DesignTokens
   | Navbar
   | Footer
   | SanityImageCrop
@@ -1444,6 +1648,7 @@ export type AllSanitySchemaTypes =
   | LucideIcon
   | AuthorReference
   | Blog
+  | Animation
   | SanityAssistInstructionTask
   | SanityAssistTaskStatus
   | SanityAssistSchemaTypeAnnotations
@@ -4088,8 +4293,7 @@ export type QueryRedirectsResult = Array<{
 }>;
 
 // Query TypeMap
-import "@sanity/client";
-declare module "@sanity/client" {
+declare global {
   interface SanityQueries {
     '\n  *[_type == "page" && defined(image)][0]{\n    \n  image {\n    \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n\n  }\n\n  }.image\n': QueryImageTypeResult;
     '*[_type == "homePage" && _id == "homePage"][0]{\n    ...,\n    _id,\n    _type,\n    "slug": slug.current,\n    title,\n    description,\n    ogTitle,\n    "ogImage": seoImage.asset->url + "?w=1200&h=630&fit=crop&fm=jpg&q=80",\n    \n  pageBuilder[]{\n    ...,\n    _type,\n    \n  _type == "cta" => {\n    ...,\n    \n  richText[]{\n    ...,\n    _type == "block" => {\n      ...,\n      \n  markDefs[]{\n    ...,\n    \n  ...customLink{\n    openInNewTab,\n    "href": select(\n      type == "internal" => internal->slug.current,\n      type == "external" => external,\n      "#"\n    ),\n  }\n\n  }\n\n    },\n    _type == "image" => {\n      \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n,\n      "caption": caption\n    },\n    _type == "table" => {\n      ...,\n      rows[]{\n        ...,\n        cells[]{\n          ...,\n          value[]{\n            ...,\n            _type == "block" => {\n              ...,\n              \n  markDefs[]{\n    ...,\n    \n  ...customLink{\n    openInNewTab,\n    "href": select(\n      type == "internal" => internal->slug.current,\n      type == "external" => external,\n      "#"\n    ),\n  }\n\n  }\n\n            }\n          }\n        }\n      }\n    }\n  }\n,\n    \n  buttons[]{\n    text,\n    variant,\n    _key,\n    _type,\n    "openInNewTab": url.openInNewTab,\n    "href": select(\n      url.type == "internal" => url.internal->slug.current,\n      url.type == "external" => url.external,\n      url.href\n    ),\n  }\n,\n    usedByTeams {\n      ...,\n      "logos": array::compact(logos[]{\n        ...,\n        \n  "openInNewTab": url.openInNewTab,\n  "href": select(\n    url.type == "internal" => url.internal->slug.current,\n    url.type == "external" => url.external,\n    url.href\n  )\n,\n        \n  image {\n    \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n\n  }\n,\n      })\n    },\n  }\n,\n    \n  _type == "hero" => {\n    ...,\n    \n  video {\n    light {\n      \n  mediaType,\n  mux {\n    \n  "playbackId": asset->playbackId,\n  "policy": asset->data.playback_ids[0].policy,\n  "aspectRatio": asset->data.aspect_ratio,\n  "status": asset->status,\n  "thumbTime": asset->thumbTime,\n  "title": asset->filename\n\n  },\n  "webm": webm.asset->url,\n  "hevc": hevc.asset->url,\n  "mobileWebm": mobileWebm.asset->url,\n  poster {\n    \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n\n  }\n\n    },\n    dark {\n      \n  mediaType,\n  mux {\n    \n  "playbackId": asset->playbackId,\n  "policy": asset->data.playback_ids[0].policy,\n  "aspectRatio": asset->data.aspect_ratio,\n  "status": asset->status,\n  "thumbTime": asset->thumbTime,\n  "title": asset->filename\n\n  },\n  "webm": webm.asset->url,\n  "hevc": hevc.asset->url,\n  "mobileWebm": mobileWebm.asset->url,\n  poster {\n    \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n\n  }\n\n    }\n  }\n,\n    \n  buttons[]{\n    text,\n    variant,\n    _key,\n    _type,\n    "openInNewTab": url.openInNewTab,\n    "href": select(\n      url.type == "internal" => url.internal->slug.current,\n      url.type == "external" => url.external,\n      url.href\n    ),\n  }\n,\n    \n  richText[]{\n    ...,\n    _type == "block" => {\n      ...,\n      \n  markDefs[]{\n    ...,\n    \n  ...customLink{\n    openInNewTab,\n    "href": select(\n      type == "internal" => internal->slug.current,\n      type == "external" => external,\n      "#"\n    ),\n  }\n\n  }\n\n    },\n    _type == "image" => {\n      \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n,\n      "caption": caption\n    },\n    _type == "table" => {\n      ...,\n      rows[]{\n        ...,\n        cells[]{\n          ...,\n          value[]{\n            ...,\n            _type == "block" => {\n              ...,\n              \n  markDefs[]{\n    ...,\n    \n  ...customLink{\n    openInNewTab,\n    "href": select(\n      type == "internal" => internal->slug.current,\n      type == "external" => external,\n      "#"\n    ),\n  }\n\n  }\n\n            }\n          }\n        }\n      }\n    }\n  }\n\n  }\n,\n    \n  _type == "heroSplit" => {\n    ...,\n    \n  image {\n    \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n\n  }\n,\n    \n  buttons[]{\n    text,\n    variant,\n    _key,\n    _type,\n    "openInNewTab": url.openInNewTab,\n    "href": select(\n      url.type == "internal" => url.internal->slug.current,\n      url.type == "external" => url.external,\n      url.href\n    ),\n  }\n,\n  }\n,\n    \n  _type == "faqAccordion" => {\n    ...,\n    "eyebrow": coalesce(eyebrow, null),\n    "categories": categories[]{\n      _key,\n      title,\n      "faqs": array::compact(faqs[]->{\n        title,\n        _id,\n        _type,\n        \n  richText[]{\n    ...,\n    _type == "block" => {\n      ...,\n      \n  markDefs[]{\n    ...,\n    \n  ...customLink{\n    openInNewTab,\n    "href": select(\n      type == "internal" => internal->slug.current,\n      type == "external" => external,\n      "#"\n    ),\n  }\n\n  }\n\n    },\n    _type == "image" => {\n      \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n,\n      "caption": caption\n    },\n    _type == "table" => {\n      ...,\n      rows[]{\n        ...,\n        cells[]{\n          ...,\n          value[]{\n            ...,\n            _type == "block" => {\n              ...,\n              \n  markDefs[]{\n    ...,\n    \n  ...customLink{\n    openInNewTab,\n    "href": select(\n      type == "internal" => internal->slug.current,\n      type == "external" => external,\n      "#"\n    ),\n  }\n\n  }\n\n            }\n          }\n        }\n      }\n    }\n  }\n\n      })\n    },\n    link{\n      ...,\n      \n  "openInNewTab": url.openInNewTab,\n  "href": select(\n    url.type == "internal" => url.internal->slug.current,\n    url.type == "external" => url.external,\n    url.href\n  )\n\n    }\n  }\n,\n    \n  _type == "featureCardsIcon" => {\n    ...,\n    \n  richText[]{\n    ...,\n    _type == "block" => {\n      ...,\n      \n  markDefs[]{\n    ...,\n    \n  ...customLink{\n    openInNewTab,\n    "href": select(\n      type == "internal" => internal->slug.current,\n      type == "external" => external,\n      "#"\n    ),\n  }\n\n  }\n\n    },\n    _type == "image" => {\n      \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n,\n      "caption": caption\n    },\n    _type == "table" => {\n      ...,\n      rows[]{\n        ...,\n        cells[]{\n          ...,\n          value[]{\n            ...,\n            _type == "block" => {\n              ...,\n              \n  markDefs[]{\n    ...,\n    \n  ...customLink{\n    openInNewTab,\n    "href": select(\n      type == "internal" => internal->slug.current,\n      type == "external" => external,\n      "#"\n    ),\n  }\n\n  }\n\n            }\n          }\n        }\n      }\n    }\n  }\n,\n    "cards": array::compact(cards[]{\n      ...,\n      \n  richText[]{\n    ...,\n    _type == "block" => {\n      ...,\n      \n  markDefs[]{\n    ...,\n    \n  ...customLink{\n    openInNewTab,\n    "href": select(\n      type == "internal" => internal->slug.current,\n      type == "external" => external,\n      "#"\n    ),\n  }\n\n  }\n\n    },\n    _type == "image" => {\n      \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n,\n      "caption": caption\n    },\n    _type == "table" => {\n      ...,\n      rows[]{\n        ...,\n        cells[]{\n          ...,\n          value[]{\n            ...,\n            _type == "block" => {\n              ...,\n              \n  markDefs[]{\n    ...,\n    \n  ...customLink{\n    openInNewTab,\n    "href": select(\n      type == "internal" => internal->slug.current,\n      type == "external" => external,\n      "#"\n    ),\n  }\n\n  }\n\n            }\n          }\n        }\n      }\n    }\n  }\n,\n    })\n  }\n,\n    \n  _type == "subscribeNewsletter" => {\n    _type,\n    _key,\n    title,\n    "subTitle": subTitle[]{\n      ...,\n      \n  markDefs[]{\n    ...,\n    \n  ...customLink{\n    openInNewTab,\n    "href": select(\n      type == "internal" => internal->slug.current,\n      type == "external" => external,\n      "#"\n    ),\n  }\n\n  }\n\n    },\n    "helperText": helperText[]{\n      ...,\n      \n  markDefs[]{\n    ...,\n    \n  ...customLink{\n    openInNewTab,\n    "href": select(\n      type == "internal" => internal->slug.current,\n      type == "external" => external,\n      "#"\n    ),\n  }\n\n  }\n\n    },\n    "testimonial": testimonial{\n      eyebrow,\n      authorName,\n      authorRole,\n      "quote": quote[]{\n        ...,\n        \n  markDefs[]{\n    ...,\n    \n  ...customLink{\n    openInNewTab,\n    "href": select(\n      type == "internal" => internal->slug.current,\n      type == "external" => external,\n      "#"\n    ),\n  }\n\n  }\n\n      },\n      "authorImage": authorImage{\n        \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n\n      }\n    }\n  }\n,\n    \n  _type == "logoCloud" => {\n    ...,\n    "logos": array::compact(logos[]{\n      ...,\n      \n  "openInNewTab": url.openInNewTab,\n  "href": select(\n    url.type == "internal" => url.internal->slug.current,\n    url.type == "external" => url.external,\n    url.href\n  )\n,\n      \n  image {\n    \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n\n  }\n,\n    })\n  }\n,\n    \n  _type == "socialGrid" => {\n    ...,\n    "socials": array::compact(socials[]{\n      ...,\n      \n  "openInNewTab": url.openInNewTab,\n  "href": select(\n    url.type == "internal" => url.internal->slug.current,\n    url.type == "external" => url.external,\n    url.href\n  )\n,\n      "logo": logo{\n        \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n\n      }\n    })\n  }\n,\n    \n  _type == "showcaseGrid" => {\n    ...,\n    "items": array::compact(items[]{\n      _key,\n      siteName,\n      url,\n      category,\n      "screenshot": screenshot{\n        \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n\n      },\n      "attributionLogo": attributionLogo{\n        \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n\n      },\n      featured\n    })\n  }\n,\n    \n  _type == "richTextBlock" => {\n    ...,\n    \n  richText[]{\n    ...,\n    _type == "block" => {\n      ...,\n      \n  markDefs[]{\n    ...,\n    \n  ...customLink{\n    openInNewTab,\n    "href": select(\n      type == "internal" => internal->slug.current,\n      type == "external" => external,\n      "#"\n    ),\n  }\n\n  }\n\n    },\n    _type == "image" => {\n      \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n,\n      "caption": caption\n    },\n    _type == "table" => {\n      ...,\n      rows[]{\n        ...,\n        cells[]{\n          ...,\n          value[]{\n            ...,\n            _type == "block" => {\n              ...,\n              \n  markDefs[]{\n    ...,\n    \n  ...customLink{\n    openInNewTab,\n    "href": select(\n      type == "internal" => internal->slug.current,\n      type == "external" => external,\n      "#"\n    ),\n  }\n\n  }\n\n            }\n          }\n        }\n      }\n    }\n  }\n\n  }\n,\n    \n  _type == "videoFeature" => {\n    ...,\n    \n  richText[]{\n    ...,\n    _type == "block" => {\n      ...,\n      \n  markDefs[]{\n    ...,\n    \n  ...customLink{\n    openInNewTab,\n    "href": select(\n      type == "internal" => internal->slug.current,\n      type == "external" => external,\n      "#"\n    ),\n  }\n\n  }\n\n    },\n    _type == "image" => {\n      \n  "id": asset._ref,\n  "preview": asset->metadata.lqip,\n  "alt": coalesce(\n    alt,\n    asset->altText,\n    caption,\n    asset->originalFilename,\n    "untitled"\n  ),\n  hotspot {\n    x,\n    y\n  },\n  crop {\n    bottom,\n    left,\n    right,\n    top\n  }\n,\n      "caption": caption\n    },\n    _type == "table" => {\n      ...,\n      rows[]{\n        ...,\n        cells[]{\n          ...,\n          value[]{\n            ...,\n            _type == "block" => {\n              ...,\n              \n  markDefs[]{\n    ...,\n    \n  ...customLink{\n    openInNewTab,\n    "href": select(\n      type == "internal" => internal->slug.current,\n      type == "external" => external,\n      "#"\n    ),\n  }\n\n  }\n\n            }\n          }\n        }\n      }\n    }\n  }\n,\n    video {\n      \n  asset {\n    \n  "playbackId": asset->playbackId,\n  "policy": asset->data.playback_ids[0].policy,\n  "aspectRatio": asset->data.aspect_ratio,\n  "status": asset->status,\n  "thumbTime": asset->thumbTime,\n  "title": asset->filename\n\n  },\n  autoPlay,\n  loop\n\n    },\n  }\n\n  }\n\n  }': QueryHomePageDataResult;
@@ -4106,4 +4310,8 @@ declare module "@sanity/client" {
     '\n  *[_type == "settings"][0]{\n    _id,\n    _type,\n    siteTitle,\n    siteDescription,\n    "logo": logos.logo.asset->url + "?w=80&h=40&dpr=3&fit=max",\n    "socialLinks": socialLinks,\n    "contactEmail": contactEmail,\n  }\n': QuerySettingsDataResult;
     '\n  *[_type == "redirect" && status == "active" && defined(source.current) && defined(destination.current)]{\n    "source":source.current, \n    "destination":destination.current, \n    "permanent" : permanent == "true"\n  }\n': QueryRedirectsResult;
   }
+}
+// Lets @sanity/client releases that predate the global registry read it too
+declare module "@sanity/client" {
+  interface SanityQueries extends globalThis.SanityQueries {}
 }

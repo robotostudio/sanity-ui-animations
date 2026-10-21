@@ -1,4 +1,4 @@
-import { BLOG_CATEGORY_OPTIONS } from "@workspace/sanity-blocks/internal/blog-categories";
+import { BLOG_CATEGORY_OPTIONS } from "@sanity-ui-animations/sanity-blocks/internal/blog-categories";
 
 export type BlogCategory = {
   label: string;

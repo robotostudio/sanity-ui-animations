@@ -1,4 +1,4 @@
-import { HeroSplit } from "@workspace/sanity-blocks/hero-split/index";
+import { HeroSplit } from "@sanity-ui-animations/sanity-blocks/hero-split/index";
 import { renderToStaticMarkup } from "react-dom/server";
 
 const IMAGE_ID = "image-abc123-1600x1200-jpg";

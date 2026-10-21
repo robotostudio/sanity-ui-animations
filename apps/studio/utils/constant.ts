@@ -1,7 +1,7 @@
 import { ComposeIcon } from "@sanity/icons/Compose";
 import { InsertAboveIcon } from "@sanity/icons/InsertAbove";
 import { SearchIcon } from "@sanity/icons/Search";
-import { DEFAULT_SANITY_API_VERSION } from "@workspace/env/constants";
+import { DEFAULT_SANITY_API_VERSION } from "@sanity-ui-animations/env/constants";
 import type { FieldGroupDefinition } from "sanity";
 
 export const GROUP = {

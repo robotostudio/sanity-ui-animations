@@ -1,7 +1,7 @@
-import { BlockHeader } from "@workspace/sanity-blocks/internal/block-header";
-import type { RichTextValue } from "@workspace/sanity-blocks/internal/rich-text";
-import { RichText } from "@workspace/sanity-blocks/internal/rich-text";
-import { SanityIcon } from "@workspace/sanity-blocks/internal/sanity-icon";
+import { BlockHeader } from "@sanity-ui-animations/sanity-blocks/internal/block-header";
+import type { RichTextValue } from "@sanity-ui-animations/sanity-blocks/internal/rich-text";
+import { RichText } from "@sanity-ui-animations/sanity-blocks/internal/rich-text";
+import { SanityIcon } from "@sanity-ui-animations/sanity-blocks/internal/sanity-icon";
 
 export interface FeatureCard {
   _key?: string | null;

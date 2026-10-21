@@ -1,10 +1,10 @@
 "use client";
 
-import { BlockEyebrow } from "@workspace/sanity-blocks/internal/block-eyebrow";
-import type { RichTextValue } from "@workspace/sanity-blocks/internal/rich-text";
-import { RichText } from "@workspace/sanity-blocks/internal/rich-text";
-import { useDisclosureAnimation } from "@workspace/sanity-blocks/internal/use-disclosure-animation";
-import { cn } from "@workspace/tailwind-config/utils";
+import { BlockEyebrow } from "@sanity-ui-animations/sanity-blocks/internal/block-eyebrow";
+import type { RichTextValue } from "@sanity-ui-animations/sanity-blocks/internal/rich-text";
+import { RichText } from "@sanity-ui-animations/sanity-blocks/internal/rich-text";
+import { useDisclosureAnimation } from "@sanity-ui-animations/sanity-blocks/internal/use-disclosure-animation";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 import { ArrowRight, ArrowUpRight, Plus } from "lucide-react";
 import Link from "next/link";
 import {

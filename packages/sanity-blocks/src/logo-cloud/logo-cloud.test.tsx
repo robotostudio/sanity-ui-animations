@@ -1,4 +1,4 @@
-import { LogoCloud } from "@workspace/sanity-blocks/logo-cloud/index";
+import { LogoCloud } from "@sanity-ui-animations/sanity-blocks/logo-cloud/index";
 import { renderToStaticMarkup } from "react-dom/server";
 
 test("LogoCloud renders the logos", () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@workspace/tailwind-config/utils";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 import {
   type ReactNode,
   useEffect,

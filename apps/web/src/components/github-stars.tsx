@@ -1,5 +1,5 @@
-import { GithubIcon } from "@workspace/sanity-blocks/internal/icons";
-import { cn } from "@workspace/tailwind-config/utils";
+import { GithubIcon } from "@sanity-ui-animations/sanity-blocks/internal/icons";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 
 function formatStars(stars: number): string {
   if (stars < 1000) {

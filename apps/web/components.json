@@ -14,7 +14,7 @@
     "components": "@/components",
     "hooks": "@/hooks",
     "lib": "@/lib",
-    "utils": "@workspace/tailwind-config/utils",
-    "ui": "@workspace/ui/components"
+    "utils": "@sanity-ui-animations/tailwind-config/utils",
+    "ui": "@sanity-ui-animations/ui/components"
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import type { SanityImageData } from "@workspace/sanity-blocks/internal/sanity-image";
+import type { SanityImageData } from "@sanity-ui-animations/sanity-blocks/internal/sanity-image";
 import { useRef } from "react";
 
 import { normalizedLogoHeight } from "../internal/logo-height";

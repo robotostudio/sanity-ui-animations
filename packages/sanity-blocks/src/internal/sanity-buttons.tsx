@@ -1,5 +1,5 @@
-import { cn } from "@workspace/tailwind-config/utils";
-import { Button } from "@workspace/ui/components/button";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
+import { Button } from "@sanity-ui-animations/ui/components/button";
 import Link from "next/link";
 import type { ComponentProps } from "react";
 

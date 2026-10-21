@@ -5,7 +5,7 @@ import type {
   QueryGlobalSeoSettingsResult,
   QueryHomePageDataResult,
   QueryNavbarDataResult,
-} from "@workspace/sanity/types";
+} from "@sanity-ui-animations/sanity/types";
 
 export type PageBuilderBlock = Get<
   QueryHomePageDataResult,

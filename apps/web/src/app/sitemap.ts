@@ -1,6 +1,6 @@
-import { sanityFetchMetadata } from "@workspace/sanity/live";
-import { querySitemapData } from "@workspace/sanity/query";
-import type { QuerySitemapDataResult } from "@workspace/sanity/types";
+import { sanityFetchMetadata } from "@sanity-ui-animations/sanity/live";
+import { querySitemapData } from "@sanity-ui-animations/sanity/query";
+import type { QuerySitemapDataResult } from "@sanity-ui-animations/sanity/types";
 import type { MetadataRoute } from "next";
 
 import { getBaseUrl } from "@/utils";

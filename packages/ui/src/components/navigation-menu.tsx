@@ -1,7 +1,7 @@
 "use client";
 
 import { NavigationMenu as NavMenuPrimitive } from "@base-ui/react/navigation-menu";
-import { cn } from "@workspace/tailwind-config/utils";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 import { cva } from "class-variance-authority";
 import { ChevronDown } from "lucide-react";
 import type * as React from "react";

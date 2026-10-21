@@ -1,7 +1,7 @@
 import {
   definePortableTextField,
   imageWithAltField,
-} from "@workspace/sanity-blocks/internal/schema-fields";
+} from "@sanity-ui-animations/sanity-blocks/internal/schema-fields";
 import { Mail } from "lucide-react";
 import { defineField, defineType } from "sanity";
 

@@ -1,4 +1,4 @@
-# @workspace/sanity-blocks
+# @sanity-ui-animations/sanity-blocks
 
 The page-builder block library. Every block ships its Sanity schema, its GROQ
 projection, its React component, and its Markdown serializer from one directory,
@@ -35,19 +35,19 @@ policy is not public. See the
 ## Imports
 
 ```typescript
-import { blockSchemas, heroSchema } from "@workspace/sanity-blocks";
-import { heroGroqProjection } from "@workspace/sanity-blocks/hero/hero.groq";
-import { HeroBlock } from "@workspace/sanity-blocks/hero/index";
-import { pageBuilderToMarkdown } from "@workspace/sanity-blocks/internal/page-builder-to-markdown";
+import { blockSchemas, heroSchema } from "@sanity-ui-animations/sanity-blocks";
+import { heroGroqProjection } from "@sanity-ui-animations/sanity-blocks/hero/hero.groq";
+import { HeroBlock } from "@sanity-ui-animations/sanity-blocks/hero/index";
+import { pageBuilderToMarkdown } from "@sanity-ui-animations/sanity-blocks/internal/page-builder-to-markdown";
 ```
 
 ## Tests
 
 ```sh
-pnpm --filter @workspace/sanity-blocks test
+pnpm --filter @sanity-ui-animations/sanity-blocks test
 ```
 
-Vitest stubs `@workspace/env/client`, `lucide-react`, and `next/link`, so the
+Vitest stubs `@sanity-ui-animations/env/client`, `lucide-react`, and `next/link`, so the
 suite runs without any environment variables.
 
 ## Adding a block

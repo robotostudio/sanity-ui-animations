@@ -1,4 +1,4 @@
-import { SocialGrid } from "@workspace/sanity-blocks/social-grid/index";
+import { SocialGrid } from "@sanity-ui-animations/sanity-blocks/social-grid/index";
 import { renderToStaticMarkup } from "react-dom/server";
 
 test("SocialGrid renders the header and social cards", () => {

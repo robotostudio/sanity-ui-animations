@@ -1,16 +1,16 @@
-import { Logger } from "@workspace/logger";
+import { Logger } from "@sanity-ui-animations/logger";
 import {
   type DynamicFetchOptions,
   getDynamicFetchOptions,
   sanityFetch,
-} from "@workspace/sanity/live";
+} from "@sanity-ui-animations/sanity/live";
 import {
   queryAllBlogDataForSearch,
   queryBlogSlugPageData,
   queryHomePageData,
   queryRedirects,
   querySlugPageData,
-} from "@workspace/sanity/query";
+} from "@sanity-ui-animations/sanity/query";
 
 import { fetchBlogIndexPage, parseBlogPageParam } from "@/lib/blog-index";
 import {

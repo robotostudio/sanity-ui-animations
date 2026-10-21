@@ -5,8 +5,8 @@ import {
   resolvePageFetchOptions,
   sanityFetch,
   sanityFetchMetadata,
-} from "@workspace/sanity/live";
-import { queryHomePageData } from "@workspace/sanity/query";
+} from "@sanity-ui-animations/sanity/live";
+import { queryHomePageData } from "@sanity-ui-animations/sanity/query";
 import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { Suspense } from "react";

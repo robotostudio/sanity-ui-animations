@@ -1,6 +1,6 @@
-import { BlockEyebrow } from "@workspace/sanity-blocks/internal/block-eyebrow";
-import type { RichTextValue } from "@workspace/sanity-blocks/internal/rich-text";
-import { RichText } from "@workspace/sanity-blocks/internal/rich-text";
+import { BlockEyebrow } from "@sanity-ui-animations/sanity-blocks/internal/block-eyebrow";
+import type { RichTextValue } from "@sanity-ui-animations/sanity-blocks/internal/rich-text";
+import { RichText } from "@sanity-ui-animations/sanity-blocks/internal/rich-text";
 
 export interface RichTextBlockProps {
   eyebrow?: string | null;

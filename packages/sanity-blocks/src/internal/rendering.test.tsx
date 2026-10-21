@@ -5,7 +5,7 @@ import {
   renderButtons,
   renderOptionalHeading,
   renderPortableText,
-} from "@workspace/sanity-blocks/internal/rendering";
+} from "@sanity-ui-animations/sanity-blocks/internal/rendering";
 import { TriangleAlert } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { renderToStaticMarkup } from "react-dom/server";

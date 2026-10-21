@@ -1,4 +1,4 @@
-import { blockSchemas } from "@workspace/sanity-blocks";
+import { blockSchemas } from "@sanity-ui-animations/sanity-blocks";
 
 import { definitions } from "@/schemaTypes/definitions/index";
 import { documents, singletons } from "@/schemaTypes/documents/index";

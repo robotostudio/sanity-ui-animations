@@ -1,12 +1,14 @@
 import { orderableDocumentListDeskItem } from "@sanity/orderable-document-list";
 import {
   BookMarked,
+  Clapperboard,
   Cog,
   File,
   FileText,
   House,
   type LucideIcon,
   MessageCircle,
+  Palette,
   PanelBottom,
   PanelTop,
   Settings2,
@@ -103,6 +105,19 @@ export const structure = (
   S.list()
     .title("Content")
     .items([
+      createList({
+        S,
+        type: "animation",
+        title: "Animations",
+        icon: Clapperboard,
+      }),
+      createSingleTon({
+        S,
+        type: "designTokens",
+        title: "Design tokens",
+        icon: Palette,
+      }),
+      S.divider(),
       createSingleTon({ S, type: "homePage", icon: House }),
       S.divider(),
       createSlugBasedStructure(S, "page"),

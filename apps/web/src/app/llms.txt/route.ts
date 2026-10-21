@@ -1,10 +1,10 @@
-import { Logger } from "@workspace/logger";
-import { sanityFetch } from "@workspace/sanity/live";
+import { Logger } from "@sanity-ui-animations/logger";
+import { sanityFetch } from "@sanity-ui-animations/sanity/live";
 import {
   queryGlobalSeoSettings,
   querySitemapData,
-} from "@workspace/sanity/query";
-import { absolutizeUrl } from "@workspace/sanity-blocks/internal/portable-text-to-markdown";
+} from "@sanity-ui-animations/sanity/query";
+import { absolutizeUrl } from "@sanity-ui-animations/sanity-blocks/internal/portable-text-to-markdown";
 
 import { getBaseUrl } from "@/utils";
 

@@ -1,10 +1,10 @@
-import type { ButtonProps } from "@workspace/sanity-blocks/internal/sanity-buttons";
-import { SanityButtons } from "@workspace/sanity-blocks/internal/sanity-buttons";
-import type { SanityImageData } from "@workspace/sanity-blocks/internal/sanity-image";
+import type { ButtonProps } from "@sanity-ui-animations/sanity-blocks/internal/sanity-buttons";
+import { SanityButtons } from "@sanity-ui-animations/sanity-blocks/internal/sanity-buttons";
+import type { SanityImageData } from "@sanity-ui-animations/sanity-blocks/internal/sanity-image";
 import {
   resolveAssetId,
   SanityImage,
-} from "@workspace/sanity-blocks/internal/sanity-image";
+} from "@sanity-ui-animations/sanity-blocks/internal/sanity-image";
 
 export interface HeroSplitProps {
   buttons?: ButtonProps[] | null;

@@ -36,14 +36,14 @@ pnpm --filter studio extract   # Refresh the committed apps/studio/schema.json
 pnpm type                      # Generate types from schema.json (root via turbo, or apps/studio)
 
 # Tests
-pnpm test             # Vitest unit tests (currently only @workspace/sanity-blocks)
+pnpm test             # Vitest unit tests (currently only @sanity-ui-animations/sanity-blocks)
 pnpm test:e2e         # Playwright smoke tests (apps/web, needs a running/deployed site)
 pnpm --filter web test:e2e:presentation  # Studio → website loop (Presentation drafts, publish, live update, no leaks); starts Studio on 3333 + `next build && next start` on 3000
 ```
 
 Note: `pnpm test` at the root is `turbo run test`, which today only reaches
-`@workspace/sanity-blocks` — the one package with a `test` script. Run a single
-package's suite with `pnpm --filter @workspace/sanity-blocks test`.
+`@sanity-ui-animations/sanity-blocks` — the one package with a `test` script. Run a single
+package's suite with `pnpm --filter @sanity-ui-animations/sanity-blocks test`.
 
 ## Monorepo Structure
 
@@ -52,12 +52,13 @@ apps/
   web/         — Next.js 16 (App Router, React 19, React Compiler, Cache Components, Tailwind v4)
   studio/      — Sanity Studio v6 (Vite, styled-components)
 packages/
-  env/           — @workspace/env — Zod-validated env vars via @t3-oss/env-nextjs
-  sanity/        — @workspace/sanity — Shared Sanity client, GROQ queries, live preview, image utils
-  sanity-blocks/ — @workspace/sanity-blocks — Block schemas, GROQ projections, React block components, Markdown serializers, Vitest suite
-  ui/            — @workspace/ui — Shared UI components (Base UI + CVA + Tailwind, shadcn-style; only `Slot` is Radix)
-  tailwind-config/   — @workspace/tailwind-config — Shared Tailwind v4 theme + `cn` utility
-  logger/        — @workspace/logger — Structured logger class with context prefixes
+  env/           — @sanity-ui-animations/env — Zod-validated env vars via @t3-oss/env-nextjs
+  sanity/        — @sanity-ui-animations/sanity — Shared Sanity client, GROQ queries, live preview, image utils
+  sanity-blocks/ — @sanity-ui-animations/sanity-blocks — Block schemas, GROQ projections, React block components, Markdown serializers, Vitest suite
+  ui-animations/ — @sanity-ui-animations/ui-animations — Scene contract: SceneSpec types, DesignTokens + DEFAULT_TOKENS, normalise/validate/compile entry points, fixtures (see docs/spec.md)
+  ui/            — @sanity-ui-animations/ui — Shared UI components (Base UI + CVA + Tailwind, shadcn-style; only `Slot` is Radix)
+  tailwind-config/   — @sanity-ui-animations/tailwind-config — Shared Tailwind v4 theme + `cn` utility
+  logger/        — @sanity-ui-animations/logger — Structured logger class with context prefixes
   typescript-config/ — Shared TS configs
 ```
 
@@ -65,7 +66,7 @@ packages/
 
 ### Data Flow: Sanity → Next.js
 
-1. **Schema** block types defined in `packages/sanity-blocks/src/` and re-exported via `@workspace/sanity-blocks`. Studio registers them via `apps/studio/schemaTypes/index.ts`
+1. **Schema** block types defined in `packages/sanity-blocks/src/` and re-exported via `@sanity-ui-animations/sanity-blocks`. Studio registers them via `apps/studio/schemaTypes/index.ts`
 2. **Type generation**: `pnpm --filter studio extract` refreshes the committed `apps/studio/schema.json`, then `pnpm type` (repo root via turbo, or in `apps/studio`) generates TS types at `packages/sanity/src/sanity.types.ts`. `pnpm type` alone reads the old `schema.json`, so a new block silently never reaches the generated types
 3. **GROQ queries** live in `packages/sanity/src/query.ts` using `defineQuery` from `next-sanity`, with reusable fragments
 4. **Data fetching** uses `sanityFetch` from `packages/sanity/src/live.ts` (wraps `defineLive` for automatic revalidation)
@@ -78,7 +79,7 @@ The core content model is a **page builder** — an array of typed blocks:
 - **Schema source**: `packages/sanity-blocks/src/<block>/` — files are named after the block, e.g. `cta/cta.schema.ts`, `cta/cta.groq.ts`, `cta/index.tsx`, `cta/markdown.ts`, `cta/thumbnail.png`, plus co-located `*.test.tsx` / `*-markdown.test.ts`. All schemas are exported as `blockSchemas` from `packages/sanity-blocks/src/sanity-blocks.ts`
 - **Studio side**: `apps/studio/schemaTypes/index.ts` merges `blockSchemas` into the exported `schemaTypes`, and `apps/studio/schemaTypes/definitions/pagebuilder.ts` maps over `blockSchemas` to build the array members — so a block added to `blockSchemas` shows up in the page builder automatically, no manual registration. Its insert-menu grid preview is `/static/thumbnails/preview-<kebab-case-name>.png`, copied from each block's `thumbnail.png` by the studio's `sync-thumbnails` script (runs on `postinstall`)
 - **Frontend side**: `apps/web/src/components/pagebuilder.tsx` — renders each `_type` via `renderBlockComponent`. Includes Sanity visual editing data attributes and optimistic updates
-- **Block components**: `packages/sanity-blocks/src/<block>/index.tsx` — styled implementations using Tailwind + `@workspace/ui`, imported by `pagebuilder.tsx` from `@workspace/sanity-blocks/<block>/index` and rendered directly. These are the production render layer
+- **Block components**: `packages/sanity-blocks/src/<block>/index.tsx` — styled implementations using Tailwind + `@sanity-ui-animations/ui`, imported by `pagebuilder.tsx` from `@sanity-ui-animations/sanity-blocks/<block>/index` and rendered directly. These are the production render layer
 
 To add a new page builder block:
 
@@ -87,7 +88,7 @@ To add a new page builder block:
 3. Import the block's GROQ projection in `packages/sanity/src/query.ts` and include it in `pageBuilderFragment`
 4. Run `pnpm --filter studio extract` then `pnpm type` to regenerate Sanity types — both, in that order
 5. Create the styled component as `packages/sanity-blocks/src/<new-block>/index.tsx`
-6. Register in `renderBlockComponent` in `apps/web/src/components/pagebuilder.tsx` (imported from `@workspace/sanity-blocks/<new-block>/index`)
+6. Register in `renderBlockComponent` in `apps/web/src/components/pagebuilder.tsx` (imported from `@sanity-ui-animations/sanity-blocks/<new-block>/index`)
 7. Add `packages/sanity-blocks/src/<new-block>/markdown.ts` exporting a `<newBlock>ToMarkdown` serializer, then wire it into the `blockToMarkdown` switch in `packages/sanity-blocks/src/internal/page-builder-to-markdown.ts` (a thin dispatcher — the serializers themselves live with their blocks) so the block degrades to semantic Markdown. Reuse `headingToMarkdown` from `internal/markdown.ts` and `portableTextToMarkdown` from `internal/portable-text-to-markdown.ts`, and add a test asserting no JSX leaks. Without this, the new block renders blank in `.md` output
 8. Add `packages/sanity-blocks/src/<new-block>/thumbnail.png` so the block has a preview in the Studio insert menu, then run `pnpm --filter studio sync-thumbnails`
 
@@ -132,21 +133,21 @@ Because `next/dynamic` resolves only when the adaptive element renders, a hero s
 
 Canonical source of truth is `apps/web/.env.example` and `apps/studio/.env.example`. Copy them to `.env` (or `.env.local`) in the same folder.
 
-**`apps/web`** (validated by `@workspace/env`):
+**`apps/web`** (validated by `@sanity-ui-animations/env`):
 
 - Required: `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET`, `NEXT_PUBLIC_SANITY_STUDIO_URL`, `SANITY_API_READ_TOKEN`, `SANITY_API_WRITE_TOKEN`
-- Optional: `NEXT_PUBLIC_SANITY_API_VERSION` (blank or unset falls back to `DEFAULT_SANITY_API_VERSION` from `@workspace/env/constants`, which uses the current UTC date at runtime), `SANITY_REVALIDATE_SECRET` (shared secret for the `/api/revalidate-sync-tags` webhook; the route fails closed when unset), and `SANITY_CONTEXT_ENDPOINT`, `SANITY_CONTEXT_TOKEN` for the FAQ block's ask row (`/api/ask` returns 503 until both are set). The ask row calls Claude through Vercel AI Gateway, which authenticates with `AI_GATEWAY_API_KEY` or, on Vercel and after `vercel env pull`, the project's `VERCEL_OIDC_TOKEN`
+- Optional: `NEXT_PUBLIC_SANITY_API_VERSION` (blank or unset falls back to `DEFAULT_SANITY_API_VERSION` from `@sanity-ui-animations/env/constants`, which uses the current UTC date at runtime), `SANITY_REVALIDATE_SECRET` (shared secret for the `/api/revalidate-sync-tags` webhook; the route fails closed when unset), and `SANITY_CONTEXT_ENDPOINT`, `SANITY_CONTEXT_TOKEN` for the FAQ block's ask row (`/api/ask` returns 503 until both are set). The ask row calls Claude through Vercel AI Gateway, which authenticates with `AI_GATEWAY_API_KEY` or, on Vercel and after `vercel env pull`, the project's `VERCEL_OIDC_TOKEN`
 - `NEXT_PUBLIC_VERCEL_ENV`, `NEXT_PUBLIC_VERCEL_URL`, `NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL` are also validated but default to localhost, so they need no local value
 
-Caveat: `SANITY_API_WRITE_TOKEN` is currently required by `packages/env/src/server.ts` even though no runtime code reads it. `apps/web/next.config.ts` imports `@workspace/env/server`, so `next dev` and `next build` both fail fast if it is unset.
+Caveat: `SANITY_API_WRITE_TOKEN` is currently required by `packages/env/src/server.ts` even though no runtime code reads it. `apps/web/next.config.ts` imports `@sanity-ui-animations/env/server`, so `next dev` and `next build` both fail fast if it is unset.
 
-**`apps/studio`** (plain `process.env`, loaded via `dotenv`/Vite — not `@workspace/env`):
+**`apps/studio`** (plain `process.env`, loaded via `dotenv`/Vite — not `@sanity-ui-animations/env`):
 
 - Required: `SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET`
-- Optional: `SANITY_STUDIO_TITLE`, `SANITY_STUDIO_API_VERSION` (defaults to `DEFAULT_SANITY_API_VERSION` from `@workspace/env/constants`, which uses the current UTC date at runtime, in `apps/studio/utils/constant.ts`), `SANITY_STUDIO_APP_ID` (written back after the first `sanity deploy`), `SANITY_STUDIO_PRESENTATION_URL` (required whenever `NODE_ENV` is not `development` — `utils/helper.ts` returns `http://localhost:3000` in development and throws otherwise, so an unset or `test` `NODE_ENV` throws too)
+- Optional: `SANITY_STUDIO_TITLE`, `SANITY_STUDIO_API_VERSION` (defaults to `DEFAULT_SANITY_API_VERSION` from `@sanity-ui-animations/env/constants`, which uses the current UTC date at runtime, in `apps/studio/utils/constant.ts`), `SANITY_STUDIO_APP_ID` (written back after the first `sanity deploy`), `SANITY_STUDIO_PRESENTATION_URL` (required whenever `NODE_ENV` is not `development` — `utils/helper.ts` returns `http://localhost:3000` in development and throws otherwise, so an unset or `test` `NODE_ENV` throws too)
 - `NEXT_PUBLIC_SITE_URL` and `SANITY_REVALIDATE_SECRET` are read only by the deployed Sanity Function `apps/studio/functions/invalidate-tags`, not by the Studio itself
 
-Web env vars are Zod-validated at startup via `@workspace/env` (`@workspace/env/client` and `@workspace/env/server`).
+Web env vars are Zod-validated at startup via `@sanity-ui-animations/env` (`@sanity-ui-animations/env/client` and `@sanity-ui-animations/env/server`).
 
 ### Types Strategy
 
@@ -216,14 +217,14 @@ mode, and the `data-inline-edit` attribute is inert outside Presentation.
 - Prefer `grid` over `flex` unless two sibling elements
 - Use `SanityImage` component for Sanity images (from `sanity-image` library)
 - Use `SanityButtons` resolver for button arrays
-- Shared UI components in `@workspace/ui` (Base UI + CVA pattern; only `Slot` is Radix)
+- Shared UI components in `@sanity-ui-animations/ui` (Base UI + CVA pattern; only `Slot` is Radix)
 
 ### Formatting (Biome)
 
 - Double quotes, semicolons, trailing commas (ES5), 2-space indent, 80 char line width
 - Import ordering: node/packages → blank line → aliases/paths
 - `noConsole: warn`, `noExplicitAny: warn`
-- Use `@workspace/logger` Logger class instead of raw `console.*`
+- Use `@sanity-ui-animations/logger` Logger class instead of raw `console.*`
 
 ### Node/Runtime
 

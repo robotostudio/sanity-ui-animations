@@ -2,7 +2,7 @@ import {
   buttonsField,
   definePortableTextField,
   logoLinkItem,
-} from "@workspace/sanity-blocks/internal/schema-fields";
+} from "@sanity-ui-animations/sanity-blocks/internal/schema-fields";
 import { Phone } from "lucide-react";
 import { defineField, defineType } from "sanity";
 

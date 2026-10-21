@@ -1,4 +1,4 @@
-import type { QueryBlogIndexPageResult } from "@workspace/sanity/types";
+import type { QueryBlogIndexPageResult } from "@sanity-ui-animations/sanity/types";
 import type { ReactNode } from "react";
 
 import { BlogHeader, FeaturedBlogCard } from "@/components/blog-card";

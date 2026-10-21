@@ -1,8 +1,8 @@
-import { rungFor } from "@workspace/sanity-blocks/hero/hero-video";
+import { rungFor } from "@sanity-ui-animations/sanity-blocks/hero/hero-video";
 import {
   isMuxPath,
   mediaTypeOf,
-} from "@workspace/sanity-blocks/hero/media-type";
+} from "@sanity-ui-animations/sanity-blocks/hero/media-type";
 
 const READY_MUX = {
   playbackId: "abc123",

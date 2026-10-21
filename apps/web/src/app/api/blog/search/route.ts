@@ -2,8 +2,8 @@ import {
   type DynamicFetchOptions,
   getDynamicFetchOptions,
   sanityFetch,
-} from "@workspace/sanity/live";
-import { queryAllBlogDataForSearch } from "@workspace/sanity/query";
+} from "@sanity-ui-animations/sanity/live";
+import { queryAllBlogDataForSearch } from "@sanity-ui-animations/sanity/query";
 import Fuse from "fuse.js";
 import { NextResponse } from "next/server";
 

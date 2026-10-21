@@ -1,7 +1,7 @@
 "use client";
 
-import type { SanityImageData } from "@workspace/sanity-blocks/internal/sanity-image";
-import { cn } from "@workspace/tailwind-config/utils";
+import type { SanityImageData } from "@sanity-ui-animations/sanity-blocks/internal/sanity-image";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 import dynamic from "next/dynamic";
 import { stegaClean } from "next-sanity";
 import { useTheme } from "next-themes";

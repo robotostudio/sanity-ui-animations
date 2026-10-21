@@ -1,4 +1,4 @@
-import { env } from "@workspace/env/client";
+import { env } from "@sanity-ui-animations/env/client";
 
 export const getBaseUrl = () => {
   // Checked first: the Vercel vars below exist only on Vercel.

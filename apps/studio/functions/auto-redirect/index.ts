@@ -1,6 +1,6 @@
 import { createClient } from "@sanity/client";
 import { documentEventHandler } from "@sanity/functions";
-import { Logger } from "@workspace/logger";
+import { Logger } from "@sanity-ui-animations/logger";
 
 import { API_VERSION } from "@/utils/constant";
 

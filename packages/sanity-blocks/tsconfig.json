@@ -1,12 +1,12 @@
 {
-  "extends": "@workspace/typescript-config/react-library.json",
+  "extends": "@sanity-ui-animations/typescript-config/react-library.json",
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "outDir": "dist",
     "paths": {
-      "@workspace/sanity-blocks": ["./src/sanity-blocks.ts"],
-      "@workspace/sanity-blocks/*": ["./src/*"]
+      "@sanity-ui-animations/sanity-blocks": ["./src/sanity-blocks.ts"],
+      "@sanity-ui-animations/sanity-blocks/*": ["./src/*"]
     },
     "rootDir": "src",
     "types": ["node", "vitest/globals"]

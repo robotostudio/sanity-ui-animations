@@ -1,4 +1,4 @@
-import { env } from "@workspace/env/server";
+import { env } from "@sanity-ui-animations/env/server";
 import { cacheTag } from "next/cache";
 import { cookies, draftMode } from "next/headers";
 import type { QueryParams, StegaCleaned } from "next-sanity";
@@ -42,7 +42,7 @@ type LiveFetchResult<Q extends string> = Awaited<
  * brands result strings as `StegaString` unless `stega` is the literal `false`,
  * and every call here passes a runtime boolean. Unbranding is type-level only —
  * the strings still carry stega characters at runtime, exactly as before 13.3.
- * The alternative is widening every block prop in `@workspace/sanity-blocks` to
+ * The alternative is widening every block prop in `@sanity-ui-animations/sanity-blocks` to
  * `StegaCleaned | StegaBranded`; do that if a literal comparison ever needs the
  * compiler's help, and keep using `stegaClean` at the comparison itself. */
 export const sanityFetch = async <const Q extends string>(

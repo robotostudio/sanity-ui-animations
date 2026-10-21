@@ -87,7 +87,7 @@ Replace in root and all workspace packages:
 
 ### Root (`package.json`)
 Remove from `devDependencies`:
-- `@workspace/eslint-config`
+- `@sanity-ui-animations/eslint-config`
 - `prettier`
 
 ### `apps/studio/package.json`
@@ -105,7 +105,7 @@ Delete files:
 
 ### `apps/web/package.json`
 Remove from `devDependencies`:
-- `@workspace/eslint-config`
+- `@sanity-ui-animations/eslint-config`
 - `prettier`
 
 Delete files:
@@ -115,7 +115,7 @@ Delete files:
 
 ### `packages/ui/package.json`
 Remove from `devDependencies`:
-- `@workspace/eslint-config`
+- `@sanity-ui-animations/eslint-config`
 - `eslint`
 
 Delete files:

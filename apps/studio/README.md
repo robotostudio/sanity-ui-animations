@@ -23,7 +23,7 @@ seed-data.tar.gz   Sample content
 ```
 
 Page-builder block schemas do not live here — they come from
-`@workspace/sanity-blocks` and are merged in `schemaTypes/index.ts`.
+`@sanity-ui-animations/sanity-blocks` and are merged in `schemaTypes/index.ts`.
 
 Video uses `sanity-plugin-mux-input`, which adds the `mux.video` field type and
 a "Videos" tab to the nav. Its Mux credentials are not env vars: an editor

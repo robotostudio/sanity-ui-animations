@@ -1,10 +1,10 @@
 import {
   definePortableTextField,
   portableTextMemberTypes,
-} from "@workspace/sanity-blocks/internal/sanity-rich-text";
+} from "@sanity-ui-animations/sanity-blocks/internal/sanity-rich-text";
 import { defineType } from "sanity";
 
-// Reuse the shared portable-text members from @workspace/sanity-blocks instead
+// Reuse the shared portable-text members from @sanity-ui-animations/sanity-blocks instead
 // of redefining them (notably the code block) here.
 export const richText = defineType({
   name: "richText",
@@ -15,4 +15,4 @@ export const richText = defineType({
 export {
   definePortableTextField as customRichText,
   portableTextMemberTypes as memberTypes,
-} from "@workspace/sanity-blocks/internal/sanity-rich-text";
+} from "@sanity-ui-animations/sanity-blocks/internal/sanity-rich-text";

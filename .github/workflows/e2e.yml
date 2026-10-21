@@ -167,11 +167,11 @@ jobs:
           SANITY_E2E_DATASET: ${{ vars.SANITY_E2E_DATASET || 'e2e' }}
           NEXT_PUBLIC_SANITY_API_VERSION: ${{ secrets.NEXT_PUBLIC_SANITY_API_VERSION }}
           NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL: http://localhost:3000
-          # `@workspace/env/client` validates at import time and the specs reach
+          # `@sanity-ui-animations/env/client` validates at import time and the specs reach
           # it through `@/utils`, so the suite cannot even be collected without
           # this. Both servers run inside the runner, hence localhost.
           NEXT_PUBLIC_SANITY_STUDIO_URL: http://localhost:3333
-          # `next.config.ts` imports `@workspace/env/server`, so the build this
+          # `next.config.ts` imports `@sanity-ui-animations/env/server`, so the build this
           # job's webServer runs fails fast without both tokens.
           SANITY_API_READ_TOKEN: ${{ secrets.SANITY_API_READ_TOKEN }}
           SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}

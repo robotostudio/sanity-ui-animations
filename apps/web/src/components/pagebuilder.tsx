@@ -1,19 +1,19 @@
 "use client";
 
 import { useOptimistic } from "@sanity/visual-editing/react";
-import { env } from "@workspace/env/client";
-import { CTABlock } from "@workspace/sanity-blocks/cta/index";
-import { FaqAccordion } from "@workspace/sanity-blocks/faq-accordion/index";
-import { FeatureCardsWithIcon } from "@workspace/sanity-blocks/feature-cards-icon/index";
-import { HeroBlock } from "@workspace/sanity-blocks/hero/index";
-import { HeroSplit } from "@workspace/sanity-blocks/hero-split/index";
-import { LogoCloud } from "@workspace/sanity-blocks/logo-cloud/index";
-import { RichTextBlock } from "@workspace/sanity-blocks/rich-text-block/index";
-import { ShowcaseGrid } from "@workspace/sanity-blocks/showcase-grid/index";
-import { SocialGrid } from "@workspace/sanity-blocks/social-grid/index";
-import { SubscribeNewsletter } from "@workspace/sanity-blocks/subscribe-newsletter/index";
-import { VideoFeature } from "@workspace/sanity-blocks/video-feature/index";
-import { cn } from "@workspace/tailwind-config/utils";
+import { env } from "@sanity-ui-animations/env/client";
+import { CTABlock } from "@sanity-ui-animations/sanity-blocks/cta/index";
+import { FaqAccordion } from "@sanity-ui-animations/sanity-blocks/faq-accordion/index";
+import { FeatureCardsWithIcon } from "@sanity-ui-animations/sanity-blocks/feature-cards-icon/index";
+import { HeroBlock } from "@sanity-ui-animations/sanity-blocks/hero/index";
+import { HeroSplit } from "@sanity-ui-animations/sanity-blocks/hero-split/index";
+import { LogoCloud } from "@sanity-ui-animations/sanity-blocks/logo-cloud/index";
+import { RichTextBlock } from "@sanity-ui-animations/sanity-blocks/rich-text-block/index";
+import { ShowcaseGrid } from "@sanity-ui-animations/sanity-blocks/showcase-grid/index";
+import { SocialGrid } from "@sanity-ui-animations/sanity-blocks/social-grid/index";
+import { SubscribeNewsletter } from "@sanity-ui-animations/sanity-blocks/subscribe-newsletter/index";
+import { VideoFeature } from "@sanity-ui-animations/sanity-blocks/video-feature/index";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 import { createDataAttribute } from "next-sanity";
 
 import type { PageBuilderBlock, PagebuilderType } from "@/types";

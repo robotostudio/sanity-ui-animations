@@ -1,4 +1,4 @@
-import { RichTextBlock } from "@workspace/sanity-blocks/rich-text-block/index";
+import { RichTextBlock } from "@sanity-ui-animations/sanity-blocks/rich-text-block/index";
 import { renderToStaticMarkup } from "react-dom/server";
 
 test("RichTextBlock renders headings and body text", () => {

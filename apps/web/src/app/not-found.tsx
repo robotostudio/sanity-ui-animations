@@ -1,4 +1,4 @@
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@sanity-ui-animations/ui/components/button";
 import Link from "next/link";
 
 export default function NotFound() {

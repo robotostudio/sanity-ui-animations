@@ -1,8 +1,8 @@
-import { lucideIconPreview } from "@workspace/sanity-blocks/internal/lucide-icon-preview";
+import { lucideIconPreview } from "@sanity-ui-animations/sanity-blocks/internal/lucide-icon-preview";
 import {
   definePortableTextField,
   iconField,
-} from "@workspace/sanity-blocks/internal/schema-fields";
+} from "@sanity-ui-animations/sanity-blocks/internal/schema-fields";
 import { LayoutGrid } from "lucide-react";
 import { defineArrayMember, defineField, defineType } from "sanity";
 

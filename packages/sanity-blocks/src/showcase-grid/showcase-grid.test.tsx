@@ -1,5 +1,5 @@
-import type { ShowcaseGridItem } from "@workspace/sanity-blocks/showcase-grid/index";
-import { ShowcaseGrid } from "@workspace/sanity-blocks/showcase-grid/index";
+import type { ShowcaseGridItem } from "@sanity-ui-animations/sanity-blocks/showcase-grid/index";
+import { ShowcaseGrid } from "@sanity-ui-animations/sanity-blocks/showcase-grid/index";
 import { renderToStaticMarkup } from "react-dom/server";
 
 function item(

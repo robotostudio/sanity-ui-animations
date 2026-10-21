@@ -1,4 +1,4 @@
-import { CTABlock } from "@workspace/sanity-blocks/cta/index";
+import { CTABlock } from "@sanity-ui-animations/sanity-blocks/cta/index";
 import { renderToStaticMarkup } from "react-dom/server";
 
 test("CTABlock renders primary content", () => {

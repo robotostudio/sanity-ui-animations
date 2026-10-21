@@ -1,7 +1,7 @@
 import {
   absolutizeUrl,
   portableTextToMarkdown,
-} from "@workspace/sanity-blocks/internal/portable-text-to-markdown";
+} from "@sanity-ui-animations/sanity-blocks/internal/portable-text-to-markdown";
 
 test("returns empty string for missing or empty input", () => {
   expect(portableTextToMarkdown(undefined)).toBe("");

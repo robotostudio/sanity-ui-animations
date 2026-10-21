@@ -1,4 +1,4 @@
-import { SanityIcon } from "@workspace/sanity-blocks/internal/sanity-icon";
+import { SanityIcon } from "@sanity-ui-animations/sanity-blocks/internal/sanity-icon";
 import Link from "next/link";
 
 import type { MenuLinkProps } from "@/types";

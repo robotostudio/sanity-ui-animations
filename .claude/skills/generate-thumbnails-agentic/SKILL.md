@@ -193,7 +193,7 @@ to delete them in Step 7.
 ## Step 4: Build the preview page
 
 Create `apps/web/src/app/thumbnails/page.tsx`, importing block components
-directly from `@workspace/sanity-blocks/<kebab>/index` — not through
+directly from `@sanity-ui-animations/sanity-blocks/<kebab>/index` — not through
 `PageBuilder`, which needs Visual Editing context.
 
 <HARD-GATE>

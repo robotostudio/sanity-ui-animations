@@ -1,8 +1,8 @@
 import {
   SanityImage,
   type SanityImageData,
-} from "@workspace/sanity-blocks/internal/sanity-image";
-import { cn } from "@workspace/tailwind-config/utils";
+} from "@sanity-ui-animations/sanity-blocks/internal/sanity-image";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 import Link from "next/link";
 
 type LogoProps = {

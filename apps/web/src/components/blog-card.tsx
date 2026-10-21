@@ -1,6 +1,6 @@
-import { BlockEyebrow } from "@workspace/sanity-blocks/internal/block-eyebrow";
-import { SanityImage } from "@workspace/sanity-blocks/internal/sanity-image";
-import { cn } from "@workspace/tailwind-config/utils";
+import { BlockEyebrow } from "@sanity-ui-animations/sanity-blocks/internal/block-eyebrow";
+import { SanityImage } from "@sanity-ui-animations/sanity-blocks/internal/sanity-image";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 import Link from "next/link";
 
 import { getBlogCategoryLabel } from "@/lib/blog-categories";

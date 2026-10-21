@@ -1,5 +1,5 @@
 {
-  "name": "@workspace/tailwind-config",
+  "name": "@sanity-ui-animations/tailwind-config",
   "version": "1.0.0",
   "type": "module",
   "private": true,
@@ -17,7 +17,7 @@
     "tw-animate-css": "catalog:"
   },
   "devDependencies": {
-    "@workspace/typescript-config": "workspace:*",
+    "@sanity-ui-animations/typescript-config": "workspace:*",
     "typescript": "catalog:"
   },
   "exports": {

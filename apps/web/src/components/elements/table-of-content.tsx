@@ -3,14 +3,14 @@
 import {
   headingChildrenToSlug,
   headingTextToSlug,
-} from "@workspace/sanity-blocks/internal/heading-slug";
+} from "@sanity-ui-animations/sanity-blocks/internal/heading-slug";
 import {
   CopyIcon,
   InstagramIcon,
   LinkedInIcon,
   RedditIcon,
   XIcon,
-} from "@workspace/sanity-blocks/internal/icons";
+} from "@sanity-ui-animations/sanity-blocks/internal/icons";
 import {
   COPY_STATUS_CLASS,
   SWAP_HIDDEN,
@@ -19,12 +19,12 @@ import {
   SWAP_TEXT_HIDDEN,
   SWAP_TEXT_SHOWN,
   useCopyToClipboard,
-} from "@workspace/sanity-blocks/internal/use-copy";
+} from "@sanity-ui-animations/sanity-blocks/internal/use-copy";
 import {
   DISCLOSURE_ANIMATION_MS,
   useDisclosureAnimation,
-} from "@workspace/sanity-blocks/internal/use-disclosure-animation";
-import { cn } from "@workspace/tailwind-config/utils";
+} from "@sanity-ui-animations/sanity-blocks/internal/use-disclosure-animation";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 import { Check, ChevronDown } from "lucide-react";
 import {
   type FC,

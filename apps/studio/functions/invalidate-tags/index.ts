@@ -1,5 +1,5 @@
 import { syncTagInvalidateEventHandler } from "@sanity/functions";
-import { Logger } from "@workspace/logger";
+import { Logger } from "@sanity-ui-animations/logger";
 
 const logger = new Logger("InvalidateTags");
 

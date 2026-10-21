@@ -1,14 +1,18 @@
-import "@workspace/env/client";
-import "@workspace/env/server";
+import "@sanity-ui-animations/env/client";
+import "@sanity-ui-animations/env/server";
 
-import { env } from "@workspace/env/client";
-import { client } from "@workspace/sanity/client";
-import { queryRedirects } from "@workspace/sanity/query";
+import { env } from "@sanity-ui-animations/env/client";
+import { client } from "@sanity-ui-animations/sanity/client";
+import { queryRedirects } from "@sanity-ui-animations/sanity/query";
 import type { NextConfig } from "next";
 import { sanity } from "next-sanity/live/cache-life";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@workspace/ui", "@workspace/sanity-blocks"],
+  transpilePackages: [
+    "@sanity-ui-animations/ui",
+    "@sanity-ui-animations/sanity-blocks",
+    "@sanity-ui-animations/ui-animations",
+  ],
   reactCompiler: true,
   cacheComponents: true,
   cacheLife: { default: sanity },

@@ -1,14 +1,14 @@
-import { ctaGroqProjection } from "@workspace/sanity-blocks/cta/cta.groq";
-import { faqAccordionGroqProjection } from "@workspace/sanity-blocks/faq-accordion/faq-accordion.groq";
-import { featureCardsIconGroqProjection } from "@workspace/sanity-blocks/feature-cards-icon/feature-cards-icon.groq";
-import { heroGroqProjection } from "@workspace/sanity-blocks/hero/hero.groq";
-import { heroSplitGroqProjection } from "@workspace/sanity-blocks/hero-split/hero-split.groq";
-import { logoCloudGroqProjection } from "@workspace/sanity-blocks/logo-cloud/logo-cloud.groq";
-import { richTextBlockGroqProjection } from "@workspace/sanity-blocks/rich-text-block/rich-text-block.groq";
-import { showcaseGridGroqProjection } from "@workspace/sanity-blocks/showcase-grid/showcase-grid.groq";
-import { socialGridGroqProjection } from "@workspace/sanity-blocks/social-grid/social-grid.groq";
-import { subscribeNewsletterGroqProjection } from "@workspace/sanity-blocks/subscribe-newsletter/subscribe-newsletter.groq";
-import { videoFeatureGroqProjection } from "@workspace/sanity-blocks/video-feature/video-feature.groq";
+import { ctaGroqProjection } from "@sanity-ui-animations/sanity-blocks/cta/cta.groq";
+import { faqAccordionGroqProjection } from "@sanity-ui-animations/sanity-blocks/faq-accordion/faq-accordion.groq";
+import { featureCardsIconGroqProjection } from "@sanity-ui-animations/sanity-blocks/feature-cards-icon/feature-cards-icon.groq";
+import { heroGroqProjection } from "@sanity-ui-animations/sanity-blocks/hero/hero.groq";
+import { heroSplitGroqProjection } from "@sanity-ui-animations/sanity-blocks/hero-split/hero-split.groq";
+import { logoCloudGroqProjection } from "@sanity-ui-animations/sanity-blocks/logo-cloud/logo-cloud.groq";
+import { richTextBlockGroqProjection } from "@sanity-ui-animations/sanity-blocks/rich-text-block/rich-text-block.groq";
+import { showcaseGridGroqProjection } from "@sanity-ui-animations/sanity-blocks/showcase-grid/showcase-grid.groq";
+import { socialGridGroqProjection } from "@sanity-ui-animations/sanity-blocks/social-grid/social-grid.groq";
+import { subscribeNewsletterGroqProjection } from "@sanity-ui-animations/sanity-blocks/subscribe-newsletter/subscribe-newsletter.groq";
+import { videoFeatureGroqProjection } from "@sanity-ui-animations/sanity-blocks/video-feature/video-feature.groq";
 import { defineQuery } from "next-sanity";
 
 const imageFields = /* groq */ `
@@ -124,7 +124,7 @@ const buttonsFragment = /* groq */ `
 `;
 
 // Page builder block fragments are owned by their respective block packages
-// in @workspace/sanity-blocks, imported above, so the GROQ projection and
+// in @sanity-ui-animations/sanity-blocks, imported above, so the GROQ projection and
 // the component that reads it stay in lockstep.
 const pageBuilderFragment = /* groq */ `
   pageBuilder[]{

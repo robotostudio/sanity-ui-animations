@@ -1,11 +1,11 @@
-# @workspace/logger
+# @sanity-ui-animations/logger
 
 A simple, context-aware logger utility for the monorepo.
 
 ## Usage
 
 ```typescript
-import { Logger } from "@workspace/logger";
+import { Logger } from "@sanity-ui-animations/logger";
 
 const logger = new Logger("MyComponent");
 

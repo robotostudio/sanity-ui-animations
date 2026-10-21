@@ -1,6 +1,9 @@
-import { type DynamicFetchOptions, sanityFetch } from "@workspace/sanity/live";
-import { queryBlogIndexPage } from "@workspace/sanity/query";
-import type { QueryBlogIndexPageResult } from "@workspace/sanity/types";
+import {
+  type DynamicFetchOptions,
+  sanityFetch,
+} from "@sanity-ui-animations/sanity/live";
+import { queryBlogIndexPage } from "@sanity-ui-animations/sanity/query";
+import type { QueryBlogIndexPageResult } from "@sanity-ui-animations/sanity/types";
 
 import { getBlogPaginationRange } from "@/utils";
 

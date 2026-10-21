@@ -1,7 +1,7 @@
 import {
   type MarkdownBlock,
   pageBuilderToMarkdown,
-} from "@workspace/sanity-blocks/internal/page-builder-to-markdown";
+} from "@sanity-ui-animations/sanity-blocks/internal/page-builder-to-markdown";
 
 const para = (text: string) => [
   { _type: "block", style: "normal", children: [{ _type: "span", text }] },

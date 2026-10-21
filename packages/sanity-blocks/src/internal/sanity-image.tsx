@@ -1,6 +1,6 @@
 "use client";
-import { env } from "@workspace/env/client";
-import { cn } from "@workspace/tailwind-config/utils";
+import { env } from "@sanity-ui-animations/env/client";
+import { cn } from "@sanity-ui-animations/tailwind-config/utils";
 import type { ElementType } from "react";
 import {
   SanityImage as BaseSanityImage,

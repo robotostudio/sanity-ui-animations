@@ -1,4 +1,4 @@
-import { Logger } from "@workspace/logger";
+import { Logger } from "@sanity-ui-animations/logger";
 import {
   DRAFTS_WITHOUT_SESSION,
   type DynamicFetchOptions,
@@ -7,8 +7,11 @@ import {
   sanityFetch,
   sanityFetchMetadata,
   sanityFetchStaticParams,
-} from "@workspace/sanity/live";
-import { querySlugPageData, querySlugPagePaths } from "@workspace/sanity/query";
+} from "@sanity-ui-animations/sanity/live";
+import {
+  querySlugPageData,
+  querySlugPagePaths,
+} from "@sanity-ui-animations/sanity/query";
 import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";

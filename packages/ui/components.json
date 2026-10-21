@@ -11,9 +11,9 @@
   },
   "iconLibrary": "lucide",
   "aliases": {
-    "components": "@workspace/ui/components",
-    "utils": "@workspace/tailwind-config/utils",
-    "hooks": "@workspace/ui/hooks",
-    "ui": "@workspace/ui/components"
+    "components": "@sanity-ui-animations/ui/components",
+    "utils": "@sanity-ui-animations/tailwind-config/utils",
+    "hooks": "@sanity-ui-animations/ui/hooks",
+    "ui": "@sanity-ui-animations/ui/components"
   }
 }

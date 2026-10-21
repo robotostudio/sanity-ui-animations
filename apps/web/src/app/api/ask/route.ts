@@ -1,6 +1,6 @@
 import { createMCPClient } from "@ai-sdk/mcp";
-import { env } from "@workspace/env/server";
-import { Logger } from "@workspace/logger";
+import { env } from "@sanity-ui-animations/env/server";
+import { Logger } from "@sanity-ui-animations/logger";
 import { isStepCount, streamText } from "ai";
 import type { NextRequest } from "next/server";
 

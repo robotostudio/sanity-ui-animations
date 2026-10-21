@@ -7,26 +7,26 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: /^@workspace\/sanity-blocks$/,
+        find: /^@sanity-ui-animations\/sanity-blocks$/,
         replacement: path.resolve(__dirname, "src/sanity-blocks.ts"),
       },
       {
-        find: /^@workspace\/sanity-blocks\/(.*)$/,
+        find: /^@sanity-ui-animations\/sanity-blocks\/(.*)$/,
         replacement: `${path.resolve(__dirname, "src")}/$1`,
       },
       {
-        find: /^@workspace\/env\/client$/,
+        find: /^@sanity-ui-animations\/env\/client$/,
         replacement: path.resolve(
           __dirname,
           "src/internal/testing/env.mock.ts"
         ),
       },
       {
-        find: /^@workspace\/ui\/(.*)$/,
+        find: /^@sanity-ui-animations\/ui\/(.*)$/,
         replacement: `${path.resolve(__dirname, "../ui/src")}/$1`,
       },
       {
-        find: "@workspace/logger",
+        find: "@sanity-ui-animations/logger",
         replacement: path.resolve(__dirname, "../logger/src/index.ts"),
       },
       {
