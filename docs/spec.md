@@ -33,6 +33,7 @@ contracts named here.
 | Primitive library (React) | `packages/ui-animations/src/react` (`./react` export) | done |
 | `/animations/[slug]`, `/animations` | `apps/web/src/app/animations` | done |
 | `pnpm tokens:sync` | `scripts/tokens-sync.ts` | placeholder |
+| Checkout fixtures, pipeline e2e, web e2e, `pnpm seed:checkout` | `packages/ui-animations/src/pipeline.e2e.test.tsx`, `apps/web/tests/e2e/animation-checkout.spec.ts`, `scripts/seed-checkout-animation.ts` | done |
 
 ## User flow
 
@@ -332,3 +333,9 @@ animations.
   the issues server-side. Only documents with a slug and a scene are routed
   (anything else 404s), and the index lists them by title. The site uses `DEFAULT_TOKENS` until the
   tokens ticket supplies the `designTokens` merge.
+- **Assumption (confirm with Jono):** `pnpm seed:checkout` publishes the
+  reference checkout scene as `animation-checkout` at
+  `/animations/checkout-flow`, with `reactCode` compiled from it, so the web
+  e2e can prove compiled code never reaches the page. It refuses to run if
+  another published animation already owns the slug. The web spec skips,
+  rather than fails, against a dataset that was never seeded.

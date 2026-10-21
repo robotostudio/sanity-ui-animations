@@ -38,7 +38,8 @@
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
     "tokens:sync": "node --experimental-strip-types scripts/tokens-sync.ts",
-    "agent:live": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/ts-resolve.mjs scripts/agent-actions-live.ts"
+    "agent:live": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/ts-resolve.mjs scripts/agent-actions-live.ts",
+    "seed:checkout": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/ts-resolve.mjs scripts/seed-checkout-animation.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",

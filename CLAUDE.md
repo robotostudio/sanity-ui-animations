@@ -42,6 +42,9 @@ pnpm --filter web test:e2e:presentation  # Studio → website loop (Presentation
 
 # One real Agent Actions run (spends AI credits; capped at 10 calls, see the script header)
 pnpm agent:live -- --id <animation-id> --mode fast|good --schema-deployed --confirm
+
+# Publish the checkout animation the web e2e reads (/animations/checkout-flow; no AI calls)
+pnpm seed:checkout
 ```
 
 Note: `pnpm test` at the root is `turbo run test`, which reaches the packages with a
