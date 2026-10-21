@@ -91,6 +91,12 @@ export function ScenePreview({ scene, reactCode }: ScenePreviewProps) {
             // Mounted only while the tab is open: the frame runs code.
             <TabPanel aria-labelledby={`${ids}-code-tab`} id={`${ids}-code`}>
               <CodePreview reactCode={reactCode} />
+              <Box padding={2}>
+                <Text muted size={1}>
+                  Compiled at the last Generate. Hand edits to the scene show
+                  here after the next run.
+                </Text>
+              </Box>
             </TabPanel>
           ) : (
             <TabPanel aria-labelledby={`${ids}-scene-tab`} id={`${ids}-scene`}>
