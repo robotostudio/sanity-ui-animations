@@ -23,8 +23,8 @@ contracts named here.
 | `SceneSpec` types, enums | `packages/ui-animations/src/scene-spec.ts` | done |
 | `DesignTokens`, `DEFAULT_TOKENS` | `packages/ui-animations/src/tokens.ts` | done |
 | Reference scene | `packages/ui-animations/src/fixtures/checkout.ts` | done |
-| `normalizeScene` | `packages/ui-animations/src/normalize.ts` | stub |
-| `validateScene` | `packages/ui-animations/src/validate.ts` | stub |
+| `normalizeScene` | `packages/ui-animations/src/normalize.ts` | done |
+| `validateScene`, `scene` `Rule.custom`, `toScenePatch` | `packages/ui-animations/src/validate.ts`, `sanity.ts` | done |
 | `compileSceneToReact` | `packages/ui-animations/src/compile.ts` | stub |
 | `animation`, `designTokens` schema | `apps/studio/schemaTypes/documents/` | done |
 | Generator input + preview | Studio custom input on `animation` | ticket |
@@ -278,3 +278,17 @@ animations.
    the example or shorten the token projection.
 7. **Publishing reactCode.** Should the compiled code be exposed on the website
    (copy button), or kept Studio-only?
+
+- **Assumption (confirm with Jono):** a cursor glide between 60px and 240px
+  rises linearly from 400ms to the glide's 1200ms floor. `normalizeScene`
+  measures travel from the window centre or an even split of its content
+  area, since layout belongs to the renderer; `validateScene` accepts any
+  glide from 400ms to 1750ms.
+- **Assumption (confirm with Jono):** the Studio validates the stored `scene`
+  as it is, not a normalised copy, so a mistyped id shows as an error instead
+  of the step being silently dropped. Studio validation uses `DEFAULT_TOKENS`
+  until the tokens ticket merges the `designTokens` document over them.
+- **Assumption (confirm with Jono):** duplicate ids are left for validation to
+  report rather than renamed, and an animation with no scene can't be
+  published. Step and window counts outside the brief (6 to 14 steps, one to
+  three windows) are warnings, not errors.

@@ -1,6 +1,11 @@
 export { compileSceneToReact } from "./compile";
 export { normalizeScene } from "./normalize";
 export {
+  type SceneValidationMarker,
+  sceneValidation,
+  toScenePatch,
+} from "./sanity";
+export {
   BADGE_STATUSES,
   type BadgeStatus,
   type CursorTarget,
@@ -49,6 +54,8 @@ export {
 } from "./tokens";
 export {
   type ScenePathSegment,
+  VALIDATION_CODES,
+  type ValidationCode,
   type ValidationIssue,
   validateScene,
 } from "./validate";
