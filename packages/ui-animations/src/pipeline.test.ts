@@ -10,6 +10,7 @@ import { generateCheckoutResponse } from "./fixtures/agent-actions/generate-chec
 import { refineCheckoutResponse } from "./fixtures/agent-actions/refine-checkout";
 import {
   BUDGET_EXHAUSTED_MESSAGE,
+  CANCELLED_MESSAGE,
   GENERATION_CALLS,
   type GenerationClient,
   type GenerationProgress,
@@ -339,6 +340,105 @@ describe("runGeneration", () => {
     await run(client, "fast");
 
     expect(created).toEqual([]);
+  });
+});
+
+describe("runGeneration with the editor's prompt", () => {
+  it("sends the prompt as a constant instead of reading the stored field", async () => {
+    const { client, requests } = fakeClient([
+      generateCheckoutResponse,
+      refineCheckoutResponse,
+    ]);
+
+    await runGeneration({
+      client,
+      documentId: "animation-checkout",
+      mode: "good",
+      prompt: "Show the cart",
+      normalize: fakeNormalize,
+      compile: () => "",
+      createKey: () => "log-key",
+    });
+
+    for (const request of requests) {
+      expect(request.instructionParams?.prompt).toEqual({
+        type: "constant",
+        value: "Show the cart",
+      });
+    }
+  });
+
+  it("reads the stored prompt when none is passed", async () => {
+    const { client, requests } = fakeClient([generateCheckoutResponse]);
+
+    await run(client, "fast");
+
+    expect(requests[0]?.instructionParams?.prompt).toEqual({
+      type: "field",
+      path: ["prompt"],
+    });
+  });
+});
+
+describe("runGeneration when cancelled", () => {
+  it("drops the answer in flight, skips the refine call and logs the cancel", async () => {
+    const controller = new AbortController();
+    let answer: (reply: Record<string, unknown>) => void = () => undefined;
+    const { client, requests, patches } = fakeClient([]);
+    client.agent.action.generate = (request) => {
+      requests.push(request);
+      return new Promise((resolve) => {
+        answer = resolve;
+      });
+    };
+
+    const pending = runGeneration({
+      client,
+      documentId: "animation-checkout",
+      mode: "good",
+      signal: controller.signal,
+      normalize: fakeNormalize,
+      compile: () => "",
+      now: fakeClock(),
+      createKey: () => "log-key",
+    });
+    await vi.waitFor(() => expect(requests).toHaveLength(1));
+    controller.abort();
+    answer(generateCheckoutResponse);
+    const result = await pending;
+
+    expect(result).toMatchObject({
+      status: "error",
+      error: CANCELLED_MESSAGE,
+      cancelled: true,
+      budgetExhausted: false,
+      calls: 1,
+    });
+    expect(requests).toHaveLength(1);
+    // Only the log entry is written: no scene from the dropped answer.
+    expect(patches).toHaveLength(1);
+    expect(patches[0]?.ops[1]).toEqual([
+      "append",
+      "generationLog",
+      [expect.objectContaining({ status: "error", error: CANCELLED_MESSAGE })],
+    ]);
+  });
+
+  it("makes no request when cancelled before the first call", async () => {
+    const controller = new AbortController();
+    const { client, requests } = fakeClient([generateCheckoutResponse]);
+    controller.abort();
+
+    const result = await runGeneration({
+      client,
+      documentId: "animation-checkout",
+      mode: "fast",
+      signal: controller.signal,
+      createKey: () => "log-key",
+    });
+
+    expect(requests).toHaveLength(0);
+    expect(result).toMatchObject({ cancelled: true, calls: 0 });
   });
 });
 

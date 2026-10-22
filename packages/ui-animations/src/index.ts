@@ -2,6 +2,7 @@ export { compileSceneToReact } from "./compile";
 export { normalizeScene } from "./normalize";
 export {
   BUDGET_EXHAUSTED_MESSAGE,
+  CANCELLED_MESSAGE,
   DEFAULT_SCHEMA_ID,
   GENERATION_CALLS,
   type GenerationClient,

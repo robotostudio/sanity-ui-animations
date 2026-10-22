@@ -16,6 +16,10 @@ import {
   type ConditionalPropertyCallback,
 } from "sanity";
 
+import { AnimationDocumentInput } from "@/components/animation-generator/animation-document-input";
+import { GenerationModeInput } from "@/components/animation-generator/generation-mode-input";
+import { generationModeOptions } from "@/components/animation-generator/mode-options";
+
 /**
  * Everything except the prompt is hidden until the editor ticks "Show
  * advanced fields". The callback (not a literal `hidden: true`) is what lets
@@ -495,6 +499,7 @@ export const animation = defineType({
   icon: Clapperboard,
   description:
     "A UI animation generated from a prompt and drawn in Roboto Studio's Scene style.",
+  components: { input: AnimationDocumentInput },
   fields: [
     defineField({
       name: "title",
@@ -526,11 +531,9 @@ export const animation = defineType({
       type: "string",
       description:
         "Fast makes one AI request. Good makes two: it generates, then refines against the design rules. Each request costs one AI credit.",
+      components: { input: GenerationModeInput },
       options: {
-        list: [
-          { title: "Fast", value: "fast" },
-          { title: "Good", value: "good" },
-        ],
+        list: generationModeOptions,
         layout: "radio",
         direction: "horizontal",
       },
@@ -552,7 +555,7 @@ export const animation = defineType({
       type: "text",
       rows: 12,
       description:
-        "React source compiled from the scene, for developers to copy. Regenerated automatically; never edited by hand and never run by the Studio or website.",
+        "React source compiled from the scene, for developers to copy. Regenerated automatically and never edited by hand. The website never runs it; the Studio's Code preview runs it only in a sandboxed frame.",
       readOnly: true,
       hidden: hiddenUnlessAdvanced,
     }),
