@@ -20,6 +20,13 @@ export type GenerateControlsProps = {
   onGenerate: () => void;
   /** Puts the editor back in the prompt to change it before the next run. */
   onRefine?: () => void;
+  /** Shown before the buttons, e.g. the prompt's shortcut hint. */
+  leading?: ReactNode;
+  /**
+   * Puts `leading` and the buttons on one row, the buttons at their own
+   * width. Otherwise `leading` sits above buttons that fill the width.
+   */
+  inline?: boolean;
 };
 
 /**
@@ -33,6 +40,8 @@ export function GenerateControls({
   hasScene,
   onGenerate,
   onRefine,
+  leading,
+  inline = false,
 }: GenerateControlsProps) {
   const { state, running, retry, cancel } = generation;
   const generateButton = useRef<HTMLButtonElement>(null);
@@ -50,48 +59,66 @@ export function GenerateControls({
     wasRunning.current = running;
   }, [running]);
 
-  return (
-    <Stack gap={3}>
-      <Grid
-        gap={2}
-        style={{
-          gridTemplateColumns:
-            running || (hasScene && onRefine) ? "1fr auto" : "1fr",
-        }}
-      >
+  const buttons = (
+    <>
+      <Button
+        disabled={!canGenerate || running}
+        icon={hasScene ? RefreshIcon : SparklesIcon}
+        onClick={onGenerate}
+        padding={3}
+        ref={generateButton}
+        text={actionText(running, hasScene)}
+        tone="primary"
+      />
+      {running ? (
         <Button
-          disabled={!canGenerate || running}
-          icon={hasScene ? RefreshIcon : SparklesIcon}
-          onClick={onGenerate}
+          disabled={state.status === "running" && state.cancelling}
+          icon={CloseIcon}
+          mode="ghost"
+          onClick={cancel}
           padding={3}
-          ref={generateButton}
-          text={actionText(running, hasScene)}
-          tone="primary"
+          text="Cancel"
         />
-        {running ? (
-          <Button
-            disabled={state.status === "running" && state.cancelling}
-            icon={CloseIcon}
-            mode="ghost"
-            onClick={cancel}
-            padding={3}
-            text="Cancel"
-          />
-        ) : null}
-        {!running && hasScene && onRefine ? (
-          <Button
-            disabled={!canGenerate}
-            icon={EditIcon}
-            mode="ghost"
-            onClick={onRefine}
-            padding={3}
-            text="Refine prompt"
-          />
-        ) : null}
-      </Grid>
+      ) : null}
+      {!running && hasScene && onRefine ? (
+        <Button
+          disabled={!canGenerate}
+          icon={EditIcon}
+          mode="ghost"
+          onClick={onRefine}
+          padding={3}
+          text="Refine prompt"
+        />
+      ) : null}
+    </>
+  );
+
+  return (
+    <Stack>
+      {inline ? (
+        <Flex align="center" gap={3} wrap="wrap">
+          <Box flex={1}>{leading}</Box>
+          <Flex gap={2}>{buttons}</Flex>
+        </Flex>
+      ) : (
+        <Stack gap={3}>
+          {leading}
+          <Grid
+            gap={2}
+            style={{
+              gridTemplateColumns:
+                running || (hasScene && onRefine) ? "1fr auto" : "1fr",
+            }}
+          >
+            {buttons}
+          </Grid>
+        </Stack>
+      )}
       <RunStatus state={state} />
       {state.status === "error" ? (
-        <RunError disabled={!canGenerate} onRetry={retry} state={state} />
+        <Box paddingTop={3}>
+          <RunError disabled={!canGenerate} onRetry={retry} state={state} />
+        </Box>
       ) : null}
     </Stack>
   );
@@ -104,7 +131,10 @@ const actionText = (running: boolean, hasScene: boolean) => {
   return hasScene ? "Regenerate" : "Generate";
 };
 
-/** The live region: stays mounted so each change is announced. */
+/**
+ * The live region: stays mounted so each change is announced, and takes no
+ * room while it has nothing to say.
+ */
 function RunStatus({ state }: { state: GenerationState }) {
   let message: ReactNode = null;
   if (state.status === "running") {
@@ -132,7 +162,7 @@ function RunStatus({ state }: { state: GenerationState }) {
     );
   }
   return (
-    <Box aria-live="polite" role="status">
+    <Box aria-live="polite" paddingTop={message ? 3 : 0} role="status">
       {message}
     </Box>
   );

@@ -11,10 +11,14 @@ export const MODE_TITLES: Record<GenerationMode, string> = {
 export const credits = (calls: number) =>
   `${calls} credit${calls === 1 ? "" : "s"}`;
 
-/** One line under the Fast / Good control: what the mode does and costs. */
+/** The cost, kept on one line when the text wraps. */
+const cost = (calls: number) =>
+  `·\u00a0${credits(calls).replace(" ", "\u00a0")}`;
+
+/** One line inside each Fast / Good option: what the mode does and costs. */
 export const MODE_DETAILS: Record<GenerationMode, string> = {
-  fast: `One AI request for a quick draft. Costs ${credits(GENERATION_CALLS.fast)}.`,
-  good: `Generates, then refines against the design rules. Costs ${credits(GENERATION_CALLS.good)}.`,
+  fast: `One pass, quicker ${cost(GENERATION_CALLS.fast)}`,
+  good: `Generates then refines · slower, better ${cost(GENERATION_CALLS.good)}`,
 };
 
 export const GENERATION_MODES = Object.keys(MODE_TITLES) as GenerationMode[];

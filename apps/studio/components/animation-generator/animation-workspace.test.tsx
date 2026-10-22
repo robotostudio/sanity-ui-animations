@@ -318,12 +318,14 @@ describe("AnimationWorkspace: prompt and mode", () => {
     const radio = (name: RegExp) => screen.getByRole("radio", { name });
 
     expect(radio(/^Fast/).getAttribute("aria-checked")).toBe("true");
-    expect(screen.getByText(/Costs 1 credit\./)).toBeTruthy();
+    expect(screen.getByText("One pass, quicker · 1 credit")).toBeTruthy();
 
     fireEvent.click(radio(/^Good/));
     expect(onModeChange).toHaveBeenLastCalledWith("good");
     expect(radio(/^Good/).getAttribute("aria-checked")).toBe("true");
-    expect(screen.getByText(/Costs 2 credits\./)).toBeTruthy();
+    expect(
+      screen.getByText("Generates then refines · slower, better · 2 credits")
+    ).toBeTruthy();
 
     fireEvent.keyDown(radio(/^Good/), { key: "ArrowLeft" });
     expect(onModeChange).toHaveBeenLastCalledWith("fast");

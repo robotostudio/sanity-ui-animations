@@ -33,10 +33,14 @@ export const AnimationView: UserViewComponent = ({ document, documentId }) => {
       patch.execute(prompt ? [{ set: { prompt } }] : [{ unset: ["prompt"] }]),
     [patch]
   );
+  // Saved on the document, so the next visit opens on the same choice.
   const onModeChange = useCallback(
-    (generationMode: GenerationMode) =>
-      patch.execute([{ set: { generationMode } }]),
-    [patch]
+    (generationMode: GenerationMode) => {
+      if (generationMode !== mode) {
+        patch.execute([{ set: { generationMode } }]);
+      }
+    },
+    [patch, mode]
   );
 
   return (

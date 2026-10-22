@@ -1,6 +1,7 @@
 import { Flex, KBD, SrOnly, Stack, Text, TextArea } from "@sanity/ui";
 import {
   type KeyboardEvent,
+  type ReactNode,
   type Ref,
   useEffect,
   useId,
@@ -14,7 +15,13 @@ export type PromptComposerProps = {
   /** Cmd/Ctrl+Enter. */
   onSubmit: () => void;
   readOnly?: boolean;
+  rows?: number;
   textAreaRef?: Ref<HTMLTextAreaElement>;
+  /**
+   * Lays out the row under the box: gets the shortcut hint, to place beside
+   * the actions. Without it the hint sits there alone.
+   */
+  footer?: (hint: ReactNode) => ReactNode;
 };
 
 const isMac = () =>
@@ -31,7 +38,9 @@ export function PromptComposer({
   onChange,
   onSubmit,
   readOnly = false,
+  rows = 5,
   textAreaRef,
+  footer,
 }: PromptComposerProps) {
   const ids = useId();
   const [text, setText] = useState(value);
@@ -52,6 +61,19 @@ export function PromptComposer({
       onSubmit();
     }
   };
+
+  const hint = (
+    <Flex align="center" gap={1} id={`${ids}-hint`}>
+      <SrOnly>
+        Press {mac ? "Command" : "Control"} and Enter to generate.
+      </SrOnly>
+      <KBD aria-hidden>{mac ? "⌘" : "Ctrl"}</KBD>
+      <KBD aria-hidden>Enter</KBD>
+      <Text aria-hidden muted size={1}>
+        to generate
+      </Text>
+    </Flex>
+  );
 
   return (
     <Stack gap={3}>
@@ -78,20 +100,11 @@ export function PromptComposer({
         radius={2}
         readOnly={readOnly}
         ref={textAreaRef}
-        rows={5}
+        rows={rows}
         style={{ resize: "vertical" }}
         value={text}
       />
-      <Flex align="center" gap={1} id={`${ids}-hint`}>
-        <SrOnly>
-          Press {mac ? "Command" : "Control"} and Enter to generate.
-        </SrOnly>
-        <KBD aria-hidden>{mac ? "⌘" : "Ctrl"}</KBD>
-        <KBD aria-hidden>Enter</KBD>
-        <Text aria-hidden muted size={1}>
-          to generate
-        </Text>
-      </Flex>
+      {footer ? footer(hint) : hint}
     </Stack>
   );
 }

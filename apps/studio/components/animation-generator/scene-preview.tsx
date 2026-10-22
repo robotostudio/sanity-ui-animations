@@ -42,11 +42,15 @@ export type ScenePreviewProps = {
 type PreviewTab = "scene" | "code";
 
 /**
- * Keeps the square scene inside the visible pane: as wide as the column,
- * but never taller than the window leaves room for.
+ * The stage spans its container, with this height: 16:9 on a wide pane,
+ * square on a narrow one (the scene itself is square), and never taller
+ * than the window leaves room for under the Generate view's controls.
+ * `cqw` is the stage card's width.
  */
-const STAGE_SIZE = "min(100%, 640px, calc(100vh - 240px))";
-const STAGE_MIN = "280px";
+const STAGE_HEIGHT =
+  "max(240px, min(100cqw, max(56.25cqw, 520px), calc(100vh - 400px)))";
+/** The square scene, as tall as the stage less its padding. */
+const SCENE_SIZE = `min(100%, calc(${STAGE_HEIGHT} - 48px))`;
 
 /**
  * The live preview: the scene through the same trusted primitive library the
@@ -82,12 +86,17 @@ export function ScenePreview({
 
   if (!preview) {
     return (
-      <Card border radius={3} tone="transparent">
+      <Card
+        border
+        radius={3}
+        style={{ containerType: "inline-size" }}
+        tone="transparent"
+      >
         <Flex
           align="center"
           justify="center"
           padding={[4, 5]}
-          style={{ minHeight: `min(560px, calc(100vh - 240px))` }}
+          style={{ minHeight: STAGE_HEIGHT }}
         >
           {run ? (
             <RunSteps run={run} />
@@ -142,17 +151,16 @@ export function ScenePreview({
           </Flex>
         </Card>
         <Card
-          padding={[3, 4]}
-          style={{ position: "relative" }}
+          style={{ position: "relative", containerType: "inline-size" }}
           tone="transparent"
         >
-          <Flex justify="center">
-            <Box
-              style={{
-                width: STAGE_SIZE,
-                minWidth: `min(100%, ${STAGE_MIN})`,
-              }}
-            >
+          <Flex
+            align="center"
+            justify="center"
+            padding={4}
+            style={{ height: STAGE_HEIGHT }}
+          >
+            <Box style={{ width: SCENE_SIZE }}>
               {tab === "code" && reactCode ? (
                 // Mounted only while the tab is open: the frame runs code.
                 <TabPanel

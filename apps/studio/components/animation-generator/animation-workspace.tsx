@@ -5,7 +5,6 @@ import {
   Button,
   Card,
   Flex,
-  Grid,
   Heading,
   Stack,
   Text,
@@ -23,8 +22,8 @@ import { PromptComposer } from "./prompt-composer";
 import { ScenePreview } from "./scene-preview";
 import { useGeneration } from "./use-generation";
 
-/** Below this pane width the stage stacks under the prompt. */
-const TWO_COLUMNS_FROM = 820;
+/** From this pane width the actions sit on one row with the shortcut hint. */
+const INLINE_ACTIONS_FROM = 640;
 
 export type AnimationWorkspaceProps = {
   /** A `useClient({ apiVersion: "vX" })` client: Agent Actions need `vX`. */
@@ -43,9 +42,10 @@ export type AnimationWorkspaceProps = {
 };
 
 /**
- * The animation's Generate view: the prompt, Fast / Good and the actions on
- * the left, the preview stage across the rest of the pane. Narrow panes
- * stack the two. Generation runs only on Generate or Cmd/Ctrl+Enter.
+ * The animation's Generate view: a control card across the top (Fast / Good,
+ * then the prompt and its actions) and the preview stage across the full
+ * width of the pane under it. Generation runs only on Generate or
+ * Cmd/Ctrl+Enter.
  */
 export function AnimationWorkspace({
   client,
@@ -65,7 +65,7 @@ export function AnimationWorkspace({
   const textArea = useRef<HTMLTextAreaElement>(null);
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
   const width = useElementSize(root)?.border.width ?? 0;
-  const twoColumns = width >= TWO_COLUMNS_FROM;
+  const wide = width >= INLINE_ACTIONS_FROM;
 
   const hasPrompt = prompt.trim().length > 0;
   const canGenerate = hasPrompt && !readOnly;
@@ -99,47 +99,39 @@ export function AnimationWorkspace({
   }, [state, toast]);
 
   return (
-    <Box padding={[3, 4, 5]} ref={setRoot}>
-      <Grid
-        gap={[4, 4, 5]}
-        style={{
-          gridTemplateColumns: twoColumns
-            ? "minmax(280px, 340px) minmax(0, 1fr)"
-            : "minmax(0, 1fr)",
-          alignItems: "start",
-        }}
-      >
-        <Stack
-          gap={4}
-          style={twoColumns ? { position: "sticky", top: 0 } : undefined}
-        >
-          <Card border padding={4} radius={3}>
-            <Stack gap={5}>
-              <PromptComposer
-                onChange={onPromptChange}
-                onSubmit={generate}
-                readOnly={readOnly || running}
-                textAreaRef={textArea}
-                value={prompt}
-              />
-              <ModeControl
-                disabled={readOnly || running}
-                onChange={onModeChange}
-                value={mode}
-              />
-              <GenerateControls
-                canGenerate={canGenerate}
-                generation={generation}
-                hasScene={Boolean(scene)}
-                onGenerate={generate}
-                onRefine={focusPrompt}
-              />
-            </Stack>
-          </Card>
-          <Box paddingX={1}>
-            <LastRun log={generationLog} />
-          </Box>
-        </Stack>
+    <Box padding={[3, 4]} ref={setRoot}>
+      <Stack gap={4}>
+        <Card border padding={[3, 4]} radius={3}>
+          <Stack gap={4}>
+            {/* Each option names and explains itself; "Mode" is its
+                accessible name. */}
+            <ModeControl
+              disabled={readOnly || running}
+              onChange={onModeChange}
+              showLabel={false}
+              value={mode}
+            />
+            <PromptComposer
+              footer={(hint) => (
+                <GenerateControls
+                  canGenerate={canGenerate}
+                  generation={generation}
+                  hasScene={Boolean(scene)}
+                  inline={wide}
+                  leading={hint}
+                  onGenerate={generate}
+                  onRefine={focusPrompt}
+                />
+              )}
+              onChange={onPromptChange}
+              onSubmit={generate}
+              readOnly={readOnly || running}
+              rows={wide ? 2 : 4}
+              textAreaRef={textArea}
+              value={prompt}
+            />
+          </Stack>
+        </Card>
         <ScenePreview
           emptyState={
             <EmptyStage
@@ -153,7 +145,10 @@ export function AnimationWorkspace({
           reactCode={reactCode}
           scene={scene}
         />
-      </Grid>
+        <Box paddingX={1}>
+          <LastRun log={generationLog} />
+        </Box>
+      </Stack>
     </Box>
   );
 }

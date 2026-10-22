@@ -1,16 +1,10 @@
-import {
-  GENERATION_CALLS,
-  type GenerationMode,
-} from "@sanity-ui-animations/ui-animations";
-import { Button, Card, Grid, Stack, Text } from "@sanity/ui";
+import type { GenerationMode } from "@sanity-ui-animations/ui-animations";
+import { CheckmarkCircleIcon } from "@sanity/icons/CheckmarkCircle";
+import { CircleIcon } from "@sanity/icons/Circle";
+import { Card, Flex, Grid, Stack, Text } from "@sanity/ui";
 import { type KeyboardEvent, useId, useRef } from "react";
 
-import {
-  credits,
-  GENERATION_MODES,
-  MODE_DETAILS,
-  MODE_TITLES,
-} from "./mode-options";
+import { GENERATION_MODES, MODE_DETAILS, MODE_TITLES } from "./mode-options";
 
 export type ModeControlProps = {
   value: GenerationMode;
@@ -21,8 +15,10 @@ export type ModeControlProps = {
 };
 
 /**
- * Fast / Good as a segmented control: a radio group, so arrow keys move the
- * choice and Tab leaves it. The line under it says what the choice costs.
+ * Fast / Good as a two-option segmented switch. It is a radio group, so
+ * arrow keys move the choice and Tab leaves it. Each option says what it
+ * does and costs; the selected one is filled and carries a check, so it
+ * does not rely on colour alone.
  */
 export function ModeControl({
   value,
@@ -56,7 +52,7 @@ export function ModeControl({
     <Stack gap={3}>
       {showLabel ? (
         <Text as="span" id={`${ids}-label`} size={1} weight="medium">
-          Quality
+          Mode
         </Text>
       ) : null}
       {/* `aria-disabled` rather than `disabled`, so a locked control still
@@ -66,9 +62,9 @@ export function ModeControl({
         padding={1}
         radius={3}
         style={disabled ? { opacity: 0.6 } : undefined}
+        tone="transparent"
       >
         <Grid
-          aria-describedby={`${ids}-detail`}
           aria-label={showLabel ? undefined : "Mode"}
           aria-labelledby={showLabel ? `${ids}-label` : undefined}
           gap={1}
@@ -79,12 +75,14 @@ export function ModeControl({
           {GENERATION_MODES.map((mode) => {
             const checked = mode === value;
             return (
-              <Button
+              <Card
+                __unstable_focusRing
                 aria-checked={checked}
+                aria-describedby={`${ids}-${mode}-detail`}
                 aria-disabled={disabled || undefined}
-                fontSize={1}
+                aria-labelledby={`${ids}-${mode}-title`}
+                as="button"
                 key={mode}
-                mode="bleed"
                 onClick={() => {
                   if (!disabled) {
                     onChange(mode);
@@ -97,16 +95,42 @@ export function ModeControl({
                 }}
                 role="radio"
                 selected={checked}
+                shadow={checked ? 1 : undefined}
+                style={{
+                  cursor: disabled ? "default" : "pointer",
+                  textAlign: "left",
+                }}
                 tabIndex={checked ? 0 : -1}
-                text={`${MODE_TITLES[mode]} · ${credits(GENERATION_CALLS[mode])}`}
-              />
+                type="button"
+              >
+                {/* A button centres its content; fill it so the two
+                    options line up at the top when one wraps. */}
+                <Flex align="flex-start" gap={3} style={{ height: "100%" }}>
+                  <Text size={2}>
+                    {checked ? <CheckmarkCircleIcon /> : <CircleIcon />}
+                  </Text>
+                  <Stack flex={1} gap={2}>
+                    <Text
+                      id={`${ids}-${mode}-title`}
+                      size={1}
+                      weight="semibold"
+                    >
+                      {MODE_TITLES[mode]}
+                    </Text>
+                    <Text
+                      id={`${ids}-${mode}-detail`}
+                      muted={!checked}
+                      size={1}
+                    >
+                      {MODE_DETAILS[mode]}
+                    </Text>
+                  </Stack>
+                </Flex>
+              </Card>
             );
           })}
         </Grid>
       </Card>
-      <Text id={`${ids}-detail`} muted size={1}>
-        {MODE_DETAILS[value]}
-      </Text>
     </Stack>
   );
 }
