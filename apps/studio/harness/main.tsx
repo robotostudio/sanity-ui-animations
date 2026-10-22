@@ -16,9 +16,9 @@ import { HarnessView } from "./harness-view";
 import { type HarnessDocument, HarnessDocumentContext } from "./sanity-mock";
 
 /**
- * `?state=empty|loading|success|error&scheme=light|dark`. `loading` and
- * `error` start with a prompt; press Generate (screenshot.mjs does) to see
- * the run hang on call 1 of 2, or fail.
+ * `?state=empty|loading|regenerating|success|error&scheme=light|dark`.
+ * `loading`, `regenerating` and `error` start with a prompt; press Generate
+ * (screenshot.mjs does) to see the run hang on call 1 of 2, or fail.
  */
 const params = new URLSearchParams(window.location.search);
 const state = params.get("state") ?? "empty";
@@ -45,6 +45,7 @@ function initialDocument(): HarnessDocument {
   };
   switch (state) {
     case "success":
+    case "regenerating":
       return {
         ...base,
         prompt: PROMPT,
@@ -65,7 +66,7 @@ function initialDocument(): HarnessDocument {
 function Harness({ children }: { children: ReactNode }) {
   const [document, setDocument] = useState(initialDocument);
   const client = useMemo(
-    () => fakeClient(state === "loading" ? "pending" : "error"),
+    () => fakeClient(state === "error" ? "error" : "pending"),
     []
   );
   const value = useMemo(

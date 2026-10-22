@@ -24,6 +24,9 @@ export const DEFAULT_SCHEMA_ID = "_.schemas.default";
 export const BUDGET_EXHAUSTED_MESSAGE =
   "AI budget reached for this organisation. Ask an admin to raise the spending limit in Manage.";
 
+/** Logged when the editor cancels a run through `signal`. */
+export const CANCELLED_MESSAGE = "Cancelled by the editor.";
+
 export type GenerationProgress = {
   /** 1-based number of the call about to be made. */
   call: number;
@@ -60,6 +63,8 @@ export type GenerationResult = (
       error: string;
       /** True when the organisation's AI budget is spent (HTTP 429). */
       budgetExhausted: boolean;
+      /** True when `signal` aborted the run. */
+      cancelled?: boolean;
       calls: number;
       log: GenerationLogEntry;
     }
@@ -104,6 +109,16 @@ export type RunGenerationOptions = {
   onProgress?: (progress: GenerationProgress) => void;
   /** Deployed schema id, e.g. `process.env.SANITY_STUDIO_SCHEMA_ID`. */
   schemaId?: string;
+  /**
+   * The prompt as the editor sees it. Without it the calls read the stored
+   * `prompt` field, which can lag the editor's last keystrokes.
+   */
+  prompt?: string;
+  /**
+   * Cancels the run. A request already sent still runs (and is billed), but
+   * its scene is not written and no further request is made.
+   */
+  signal?: AbortSignal;
   /** Seams for tests; default to the real normaliser and compiler. */
   normalize?: (draft: SceneSpecDraft, tokens: DesignTokens) => SceneSpec;
   compile?: (scene: SceneSpec, tokens: DesignTokens) => string;
@@ -129,7 +144,19 @@ Show realistic product UI in one to three macOS windows and tell one story
 in 6 to 14 steps. Use Tide on at most one element.
 Use this as a worked example of the format: $example.`;
 
-function commonRequest(draftId: string, schemaId: string) {
+type RequestContext = {
+  draftId: string;
+  schemaId: string;
+  prompt: string | undefined;
+};
+
+/** The editor's prompt when the caller passed it, else the stored field. */
+const promptParam = (prompt: string | undefined) =>
+  prompt === undefined
+    ? { type: "field" as const, path: ["prompt"] }
+    : { type: "constant" as const, value: prompt };
+
+function commonRequest({ draftId, schemaId }: RequestContext) {
   return {
     schemaId,
     documentId: draftId,
@@ -142,16 +169,13 @@ function commonRequest(draftId: string, schemaId: string) {
 }
 
 /** Call 1 (Fast and Good): generate the scene from the prompt. */
-function generateRequest(
-  draftId: string,
-  schemaId: string
-): GenerateInstruction {
+function generateRequest(context: RequestContext): GenerateInstruction {
   return {
-    ...commonRequest(draftId, schemaId),
+    ...commonRequest(context),
     temperature: 0.3,
     instruction: GENERATE_INSTRUCTION,
     instructionParams: {
-      prompt: { type: "field", path: ["prompt"] },
+      prompt: promptParam(context.prompt),
       designTokens: DESIGN_TOKENS_PARAM,
       example: { type: "constant", value: JSON.stringify(checkoutScene) },
     },
@@ -168,14 +192,14 @@ that do not tell the story. Keep everything that already works.`;
  * not Transform, because Transform caps the interpolated instruction at
  * 2,000 characters and the rules plus the scene exceed it.
  */
-function refineRequest(draftId: string, schemaId: string): GenerateInstruction {
+function refineRequest(context: RequestContext): GenerateInstruction {
   return {
-    ...commonRequest(draftId, schemaId),
+    ...commonRequest(context),
     temperature: 0,
     instruction: REFINE_INSTRUCTION,
     instructionParams: {
       scene: { type: "field", path: ["scene"] },
-      prompt: { type: "field", path: ["prompt"] },
+      prompt: promptParam(context.prompt),
       designTokens: DESIGN_TOKENS_PARAM,
     },
   };
@@ -183,7 +207,7 @@ function refineRequest(draftId: string, schemaId: string): GenerateInstruction {
 
 const REQUESTS: Record<
   GenerationMode,
-  ((draftId: string, schemaId: string) => GenerateInstruction)[]
+  ((context: RequestContext) => GenerateInstruction)[]
 > = {
   fast: [generateRequest],
   good: [generateRequest, refineRequest],
@@ -220,6 +244,8 @@ export async function runGeneration({
   tokens = DEFAULT_TOKENS,
   onProgress,
   schemaId = DEFAULT_SCHEMA_ID,
+  prompt,
+  signal,
   normalize = normalizeScene,
   compile = compileSceneToReact,
   now = Date.now,
@@ -231,21 +257,31 @@ export async function runGeneration({
   let calls = 0;
   let outcome:
     | { status: "success"; scene: SceneSpec; reactCode: string }
-    | { status: "error"; error: string; budgetExhausted: boolean };
+    | {
+        status: "error";
+        error: string;
+        budgetExhausted: boolean;
+        cancelled?: boolean;
+      };
 
   try {
+    signal?.throwIfAborted();
     await ensureDraft(client, draftId);
     let written: { scene: SceneSpec; reactCode: string } | undefined;
     for (const buildRequest of requests) {
-      calls += 1;
+      signal?.throwIfAborted();
+      const call = calls + 1;
       onProgress?.({
-        call: calls,
+        call,
         totalCalls: requests.length,
-        message: progressMessage(calls, requests.length),
+        message: progressMessage(call, requests.length),
       });
-      const generated = await client.agent.action.generate(
-        buildRequest(draftId, schemaId)
-      );
+      const generated = await untilAborted(() => {
+        calls = call;
+        return client.agent.action.generate(
+          buildRequest({ draftId, schemaId, prompt })
+        );
+      }, signal);
       const scene = normalize(generated.scene as SceneSpecDraft, tokens);
       const reactCode = compile(scene, tokens);
       // One write per call: the refine call reads `scene` back from the draft.
@@ -258,11 +294,20 @@ export async function runGeneration({
     outcome = { status: "success", ...written };
   } catch (error) {
     const budgetExhausted = isBudgetExhausted(error);
-    outcome = {
-      status: "error",
-      error: budgetExhausted ? BUDGET_EXHAUSTED_MESSAGE : errorMessage(error),
-      budgetExhausted,
-    };
+    outcome = signal?.aborted
+      ? {
+          status: "error",
+          error: CANCELLED_MESSAGE,
+          budgetExhausted: false,
+          cancelled: true,
+        }
+      : {
+          status: "error",
+          error: budgetExhausted
+            ? BUDGET_EXHAUSTED_MESSAGE
+            : errorMessage(error),
+          budgetExhausted,
+        };
   }
 
   const log: GenerationLogEntry = {
@@ -286,6 +331,25 @@ export async function runGeneration({
     return { ...outcome, calls, log, logError: errorMessage(error) };
   }
   return { ...outcome, calls, log };
+}
+
+/**
+ * Starts `request` unless `signal` has aborted, and rejects as soon as it
+ * does. Agent Actions take no signal, so a request already sent carries on;
+ * its answer is just never used.
+ */
+function untilAborted<T>(request: () => Promise<T>, signal?: AbortSignal) {
+  if (!signal) {
+    return request();
+  }
+  signal.throwIfAborted();
+  return new Promise<T>((resolve, reject) => {
+    const abort = () => reject(signal.reason);
+    signal.addEventListener("abort", abort, { once: true });
+    request()
+      .then(resolve, reject)
+      .finally(() => signal.removeEventListener("abort", abort));
+  });
 }
 
 /**

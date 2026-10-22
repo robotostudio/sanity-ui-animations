@@ -37,7 +37,8 @@ mkdirSync(prefix.endsWith("/") ? prefix : dirname(prefix), {
 });
 
 const base = process.env.HARNESS_URL ?? "http://localhost:3334";
-const STATES = ["empty", "loading", "success", "error"];
+const STATES = ["empty", "loading", "regenerating", "success", "error"];
+const PRESSES_GENERATE = new Set(["loading", "regenerating", "error"]);
 const SCHEMES = ["light", "dark"];
 
 const { chromium } = loadPlaywright();
@@ -50,9 +51,9 @@ for (const scheme of SCHEMES) {
   for (const state of STATES) {
     await page.goto(`${base}/?state=${state}&scheme=${scheme}`);
     await page.waitForLoadState("networkidle");
-    if (state === "loading" || state === "error") {
+    if (PRESSES_GENERATE.has(state)) {
       await page
-        .getByRole("button", { name: /^generate/i })
+        .getByRole("button", { name: /^(re)?generate$/i })
         .first()
         .click();
     }
@@ -62,6 +63,16 @@ for (const scheme of SCHEMES) {
     await page.screenshot({ path: file });
     process.stdout.write(`${file}\n`);
   }
+}
+
+// The Fields view (the form) keeps the same controls; one shot per scheme.
+for (const scheme of SCHEMES) {
+  await page.goto(`${base}/?state=success&scheme=${scheme}&view=form`);
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(6000);
+  const file = `${prefix}form-success-${scheme}.png`;
+  await page.screenshot({ path: file });
+  process.stdout.write(`${file}\n`);
 }
 
 await browser.close();

@@ -38,15 +38,22 @@ export const getPublishedId = (id: string) => id.replace(/^drafts\./, "");
 export const getDraftId = (id: string) =>
   id.startsWith("drafts.") ? id : `drafts.${id}`;
 
+export const set = (value: unknown) => ({ type: "set", value });
+
+type HarnessPatch = { set?: Record<string, unknown>; unset?: string[] };
+
 export const useDocumentOperation = () => {
   const { patch } = useContext(HarnessDocumentContext);
   return {
     patch: {
       disabled: false,
-      execute: (patches: { set?: Record<string, unknown> }[]) => {
+      execute: (patches: HarnessPatch[]) => {
         for (const item of patches) {
           if (item.set) {
             patch(item.set);
+          }
+          for (const field of item.unset ?? []) {
+            patch({ [field]: undefined });
           }
         }
       },

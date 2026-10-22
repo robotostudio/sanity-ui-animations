@@ -40,9 +40,11 @@ contracts named here.
    a prompt, then picks **Fast** or **Good**. Nothing else is visible: the
    scene, code and log fields stay hidden until **Show advanced fields** is
    ticked.
-2. **Loading.** **Generate** disables the form controls and shows a spinner
-   with "Generating… (call 1 of 1)" for Fast, or "(call 1 of 2)" then
-   "(call 2 of 2)" for Good.
+2. **Loading.** **Generate** (or Cmd/Ctrl+Enter in the prompt) locks the
+   controls and names each call: "Generating the scene… (call 1 of 2)", then
+   "Refining against the design rules… (call 2 of 2)" for Good. **Cancel**
+   stops the run: no further call is made and the answer of the call in
+   flight is dropped, but that call is still billed.
 3. **Preview.** The normalised scene renders live under the prompt, through
    the same primitive library the website uses. Validation issues are listed
    beside it.
@@ -262,6 +264,9 @@ animations.
   autosave. The button stays disabled while a run is in flight.
 - `noWrite` with a single patch per call means a failed or abandoned run
   writes nothing.
+- Animations open on a full-width **Generate** view (`AnimationView`, the
+  default view from `defaultDocumentNode` in `apps/studio/structure.ts`);
+  the **Fields** view is the form, with the same controls under the prompt.
 
 ## Open questions for Jono
 

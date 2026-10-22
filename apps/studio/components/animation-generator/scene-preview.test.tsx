@@ -55,7 +55,40 @@ describe("ScenePreview", () => {
     expect(screen.getByRole("img").getAttribute("aria-label")).toBe(
       checkoutScene.label
     );
-    expect(screen.getByText("No validation issues.")).toBeTruthy();
+    expect(screen.getByText("No issues")).toBeTruthy();
+    expect(
+      screen.queryByRole("list", { name: "Validation issues" })
+    ).toBeNull();
+  });
+
+  it("replays the scene from the top", () => {
+    renderPreview({ scene: checkoutScene });
+    const before = screen.getByRole("img");
+
+    fireEvent.click(screen.getByRole("button", { name: "Replay" }));
+
+    // A fresh element: the player restarted rather than kept its clock.
+    expect(screen.getByRole("img")).not.toBe(before);
+  });
+
+  it("shows a run's calls on the stage while it generates", () => {
+    renderPreview({
+      scene: undefined,
+      run: {
+        status: "running",
+        request: { mode: "good", prompt: "x" },
+        call: 2,
+        totalCalls: 2,
+        startedAt: 0,
+        cancelling: false,
+      },
+    });
+
+    expect(screen.getByText("Generating the scene")).toBeTruthy();
+    expect(screen.getByText("Refining against the design rules")).toBeTruthy();
+    expect(
+      screen.queryByText("No scene yet. Write a prompt and press Generate.")
+    ).toBeNull();
   });
 
   it("lists validation issues beside the preview", () => {
@@ -66,6 +99,7 @@ describe("ScenePreview", () => {
       'Nothing in the scene has the id "basket".'
     );
     expect(screen.getByRole("img")).toBeTruthy();
+    expect(screen.getByText("1 issue")).toBeTruthy();
   });
 });
 
@@ -95,6 +129,16 @@ describe("ScenePreview: code preview", () => {
     expect(frame.tagName).toBe("IFRAME");
     expect(frame.getAttribute("sandbox")).toBe("allow-scripts");
     expect(frame.hasAttribute("src")).toBe(false);
+  });
+
+  it("keeps the sandbox to allow-scripts after a replay", () => {
+    renderPreview({ scene: checkoutScene, reactCode });
+    openCodePreview();
+    fireEvent.click(screen.getByRole("button", { name: "Replay" }));
+
+    const frames = document.querySelectorAll("iframe");
+    expect(frames).toHaveLength(1);
+    expect(frames[0]?.getAttribute("sandbox")).toBe("allow-scripts");
   });
 
   it("embeds the code as an escaped string, so it cannot close its script", () => {
