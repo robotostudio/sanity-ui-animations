@@ -12,7 +12,9 @@ scene into a standalone React component.
 preview in the Studio, saved as assets/demo.gif. Not recorded yet. -->
 
 > [!NOTE]
-> Demo GIF: TODO. A public demo URL is not available yet.
+> Live demo: [sanity-ui-animations-dev.vercel.app/animations/checkout-flow](https://sanity-ui-animations-dev.vercel.app/animations/checkout-flow),
+> the reference checkout scene published with `pnpm seed:checkout`. Demo GIF:
+> TODO.
 
 The repo is built on
 [Turbo Start Sanity](https://github.com/robotostudio/turbo-start-sanity), so
@@ -168,7 +170,19 @@ More detail is in [docs/architecture.md](docs/architecture.md).
    pnpm tokens:sync
    ```
 
-6. Start both apps:
+6. Optional: load the template's sample content, so the page builder's home
+   page and blog are not empty. Without a published `homePage` document the
+   site's `/` returns 404; `/animations` does not need it.
+
+   ```sh
+   cd apps/studio
+   npx sanity dataset import seed-data.tar.gz <dataset> --replace
+   cd ../..
+   ```
+
+   `--replace` overwrites documents that already have the same `_id`.
+
+7. Start both apps:
 
    ```sh
    pnpm dev
@@ -176,7 +190,7 @@ More detail is in [docs/architecture.md](docs/architecture.md).
 
    Studio: `http://localhost:3333`. Web: `http://localhost:3000`.
 
-7. In the Studio, create an Animation, enter a prompt, pick Fast and press
+8. In the Studio, create an Animation, enter a prompt, pick Fast and press
    Generate. Publish it and open `http://localhost:3000/animations/<slug>`.
 
 To see a scene without spending AI credits, run `pnpm seed:checkout`. It

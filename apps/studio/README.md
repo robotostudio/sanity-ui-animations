@@ -5,7 +5,7 @@ repository root with `pnpm dev:studio` (or `pnpm dev` for both apps); it serves
 on `http://localhost:3333`.
 
 Setup, environment variables, and the seed-data import are documented in the
-[root README](../../README.md#getting-started). This Studio needs
+[root README](../../README.md#quickstart). This Studio needs
 `SANITY_STUDIO_PROJECT_ID` and `SANITY_STUDIO_DATASET` in `apps/studio/.env` to
 start.
 

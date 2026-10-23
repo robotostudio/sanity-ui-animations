@@ -41,8 +41,11 @@ pnpm lint
 pnpm format:check   # or `pnpm format` to fix
 pnpm check-types
 pnpm test
-pnpm build
+pnpm build:studio   # CI builds only the Studio; Vercel builds apps/web
 ```
+
+`pnpm build` also builds `apps/web`, which prerenders from your Sanity dataset,
+so it fails against an empty or unconfigured dataset even when the code is fine.
 
 If you changed a Sanity schema, run `pnpm --filter studio extract` and then
 `pnpm type`, and commit the regenerated `apps/studio/schema.json` and
