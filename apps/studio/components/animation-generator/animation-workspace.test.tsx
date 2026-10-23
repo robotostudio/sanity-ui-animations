@@ -400,4 +400,60 @@ describe("useGeneration", () => {
       message: "Network down",
     });
   });
+
+  it("shares one run per document between its views, across remounts", async () => {
+    let resolve: (result: GenerationResult) => void = () => undefined;
+    run.mockImplementationOnce(
+      () =>
+        new Promise((done) => {
+          resolve = done;
+        })
+    );
+    const fieldsLock = vi.fn();
+    const generateView = renderHook(() =>
+      useGeneration({ client, documentId: "anim-1" })
+    );
+    const fieldsView = renderHook(() =>
+      useGeneration({
+        client,
+        documentId: "anim-1",
+        onRunningChange: fieldsLock,
+      })
+    );
+    const otherDocument = renderHook(() =>
+      useGeneration({ client, documentId: "anim-2" })
+    );
+
+    let started: Promise<void> = Promise.resolve();
+    act(() => {
+      started = generateView.result.current.generate({
+        mode: "fast",
+        prompt: "x",
+      });
+    });
+    expect(fieldsView.result.current.running).toBe(true);
+    expect(fieldsLock.mock.calls).toEqual([[true]]);
+    expect(otherDocument.result.current.running).toBe(false);
+
+    // A second press from the other view does not start a second run.
+    await act(() =>
+      fieldsView.result.current.generate({ mode: "good", prompt: "y" })
+    );
+    expect(run).toHaveBeenCalledTimes(1);
+
+    // Switching views mid-run keeps its progress.
+    generateView.unmount();
+    const remounted = renderHook(() =>
+      useGeneration({ client, documentId: "anim-1" })
+    );
+    expect(remounted.result.current.running).toBe(true);
+
+    await act(async () => {
+      resolve({ status: "success", calls: 1 } as never);
+      await started;
+    });
+    expect(remounted.result.current.state.status).toBe("success");
+    expect(fieldsView.result.current.state.status).toBe("success");
+    expect(fieldsLock.mock.calls).toEqual([[true], [false]]);
+  });
 });
