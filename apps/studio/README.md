@@ -1,6 +1,6 @@
 # Studio
 
-The Sanity Studio v6 workspace for Turbo Start Sanity. Run it from the
+The Sanity Studio v6 workspace for sanity-ui-animations. Run it from the
 repository root with `pnpm dev:studio` (or `pnpm dev` for both apps); it serves
 on `http://localhost:3333`.
 

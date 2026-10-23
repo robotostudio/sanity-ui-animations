@@ -1,6 +1,6 @@
 ## Description
 
-<!-- Brief description of changes -->
+<!-- What changed and why -->
 
 ## Type of change
 
@@ -9,14 +9,21 @@
 - [ ] Refactor
 - [ ] Documentation
 
-## Screenshots (if applicable)
+## Screenshots or recordings (if applicable)
 
-<!-- Screenshots of visual changes -->
+<!-- Studio or website changes: add a screenshot or a short recording -->
 
 ## Testing
 
-<!-- How were these changes tested? -->
+<!-- How you tested the change. List the commands you ran. -->
+
+## Checklist
+
+- [ ] `pnpm lint`, `pnpm format:check`, `pnpm check-types` and `pnpm test` pass
+- [ ] No tokens, `.env` files or real project values are committed
+- [ ] Tests make no live Agent Actions calls
+- [ ] Docs and `.env.example` files are updated if setup changed
 
 ## Related issues
 
-<!-- Reference any related issues (e.g., Fixes #123) -->
+<!-- For example: Fixes #123 -->

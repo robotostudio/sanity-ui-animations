@@ -1,8 +1,32 @@
-# Turbo Start Sanity
+# Glossary
 
-A Sanity-driven Next.js starter built around a **page builder**: a page is an ordered array of typed content blocks. This glossary pins the language for how those blocks are modeled and how their data is rendered for different audiences.
+The language used in this repository. The first part covers the animation features. The rest is inherited from [Turbo Start Sanity](https://github.com/robotostudio/turbo-start-sanity), a Sanity-driven Next.js starter built around a **page builder**: a page is an ordered array of typed content blocks. This glossary pins the language for how those blocks are modeled and how their data is rendered for different audiences.
 
-## Language
+## Animation language
+
+**Animation**:
+A Sanity document holding a prompt, a generation mode, a `scene` and the compiled `reactCode`. Served at `/animations/<slug>` once published.
+
+**Scene**:
+The structured data (`SceneSpec`) that describes an animation: a ground, windows, elements, connectors, a cursor and timed steps. Agent Actions write it; the primitive library renders it.
+_Avoid_: animation code, template
+
+**Primitive**:
+A trusted React component from `@sanity-ui-animations/ui-animations/react` (`Window`, `Element`, `Badge`, `Connector`, `Cursor`, `Ground`). The only way a scene is drawn.
+
+**Mode**:
+Fast (one Agent Actions call) or Good (generate, then refine). Each call is one AI credit.
+
+**Normalize** and **validate**:
+`normalizeScene` auto-corrects a scene and never rejects it. `validateScene` reports issues, and its errors block publishing.
+
+**Compiled code**:
+The `reactCode` string produced by `compileSceneToReact`. Deterministic, for copying only, never run outside a sandboxed iframe.
+
+**Design tokens**:
+The `designTokens` singleton synced from design.md and motion.md, with `DEFAULT_TOKENS` as the fallback.
+
+## Page-builder language
 
 **Page-builder block**:
 One typed content unit in a page's `pageBuilder` array (e.g. `hero`, `faqAccordion`, `cta`). Authored in Sanity, rendered by the frontend.
