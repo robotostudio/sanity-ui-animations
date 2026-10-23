@@ -31,7 +31,8 @@ const isMac = () =>
 /**
  * The prompt box. It keeps its own copy of the text so typing never waits
  * on the document store, and takes the stored value again whenever the
- * editor is not typing in it (another tab, an example prompt, undo).
+ * editor is not typing in it (another tab, an example prompt, undo) and
+ * when the box loses focus.
  */
 export function PromptComposer({
   value,
@@ -86,6 +87,11 @@ export function PromptComposer({
         id={`${ids}-prompt`}
         onBlur={() => {
           focused.current = false;
+          // The stored prompt may have changed while the editor was typing
+          // (Fields view, a collaborator). Generate sends the stored value,
+          // so show it again. A slower echo of the editor's own typing still
+          // lands through the effect above, now that the box is not focused.
+          setText(value);
         }}
         onChange={(event) => {
           setText(event.currentTarget.value);

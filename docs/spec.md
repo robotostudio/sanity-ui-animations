@@ -12,11 +12,8 @@ Sources for the rules: [design.md](https://robotostudio.com/design.md) and
 
 ## Status
 
-The **foundation** is in place: this spec, the scene contract
-(`packages/ui-animations`), the Studio schema, and the env and script
-placeholders. The generator UI, normaliser, validator, codegen, renderer, web
-route and `tokens:sync` come in follow-up tickets. Each one builds on the
-contracts named here.
+Every piece below is built. Each one builds on the contracts named in this
+spec; the table says where each lives.
 
 | Piece | Where | State |
 |---|---|---|

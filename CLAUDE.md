@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Turbo Start Sanity — a pnpm monorepo (Turborepo) with a Next.js 16 frontend and a Sanity Studio v6 CMS. Uses Biome/Ultracite for linting/formatting.
+sanity-ui-animations: prompt-to-UI-animation for Sanity Studio, built on Turbo Start Sanity. A pnpm monorepo (Turborepo) with a Next.js 16 frontend and a Sanity Studio v6 CMS. Uses Biome/Ultracite for linting/formatting.
 
 ## Commands
 

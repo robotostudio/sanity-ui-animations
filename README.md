@@ -1,490 +1,307 @@
 # sanity-ui-animations
 
-Prompt-to-UI-animation for Sanity Studio. An editor describes a product flow
-("Show our checkout flow, and adding discounts to cart"), picks Fast or Good,
-and gets a live preview of an animated Scene in Roboto Studio's design and
-motion style. Generation runs only on Sanity Agent Actions. The AI writes a
-structured scene spec, never executable code, and a trusted primitive library
-renders it in the Studio and on the Next.js site at `/animations/[slug]`.
+Prompt-to-UI-animation for Sanity Studio. An editor types a prompt, for example
+"Show our checkout flow, and adding discounts to cart", picks **Fast** or
+**Good**, and gets a live preview of an animated product UI scene. Generation
+runs on [Sanity Agent Actions](https://www.sanity.io/docs/agent-actions). The
+model writes structured scene data, a trusted primitive library renders it in
+the Studio and on a Next.js site, and a deterministic compiler turns the same
+scene into a standalone React component.
 
-The design is in [docs/spec.md](docs/spec.md), and the scene contract is in
-`packages/ui-animations`. The repo is built on
-[Turbo Start Sanity](https://github.com/robotostudio/turbo-start-sanity), and
-the rest of this README describes that base.
+<!-- TODO(demo): replace this comment with a GIF of a prompt turning into a
+preview in the Studio, saved as assets/demo.gif. Not recorded yet. -->
 
-![Turbo Start Sanity](https://raw.githubusercontent.com/robotostudio/turbo-start-sanity/main/assets/og-image.png)
+> [!NOTE]
+> Live demo: [sanity-ui-animations-dev.vercel.app/animations/checkout-flow](https://sanity-ui-animations-dev.vercel.app/animations/checkout-flow),
+> the reference checkout scene published with `pnpm seed:checkout`. Demo GIF:
+> TODO.
 
-## What is included
+The repo is built on
+[Turbo Start Sanity](https://github.com/robotostudio/turbo-start-sanity), so
+it also contains that template's page builder, blog and Markdown features.
+This README covers the animation features and the setup they need. The full
+design is in [docs/spec.md](docs/spec.md).
 
-- `apps/web`: Next.js 16 App Router frontend with React 19, Tailwind CSS v4,
-  Visual Editing, SEO routes, and Playwright smoke tests
-- `apps/studio`: Sanity Studio 6 workspace with page, blog, FAQ, redirect, and
-  singleton schemas
-- `packages/sanity-blocks`: shared page-builder block schemas, GROQ fragments,
-  React renderers, Markdown serializers, and tests
-- `packages/sanity`: shared Sanity client, live query helpers, GROQ queries,
-  the `urlFor` image URL helper, and the generated Sanity types
-- `packages/ui-animations`: the scene contract (`SceneSpec` types, design
-  tokens, a reference fixture) shared by the Studio and the website
-- `packages/ui`, `packages/tailwind-config`, `packages/env`,
-  `packages/logger`, `packages/typescript-config`: shared workspace packages for
-  UI, styling, env validation, logging, and TypeScript config
+## Contents
 
-## Repo layout
+- [How it works](#how-it-works)
+- [Fast and Good modes](#fast-and-good-modes)
+- [Architecture](#architecture)
+- [Requirements](#requirements)
+- [Quickstart](#quickstart)
+- [Environment variables](#environment-variables)
+- [Commands](#commands)
+- [Deploying](#deploying)
+- [Costs](#costs)
+- [Contributing](#contributing)
+- [License](#license)
+
+## How it works
+
+1. In the Studio, an editor creates an **Animation** document with a title,
+   a slug and a prompt, and picks Fast or Good.
+2. **Generate** calls Agent Actions with the prompt, the design tokens and a
+   worked example scene. The action runs with `noWrite: true` and returns a
+   `scene` object, which is plain data: ids, short strings, numbers and enum
+   members.
+3. `normalizeScene` auto-corrects the result (defaults, clamped sizes, nearest
+   valid enum values, durations snapped to the motion rules, dangling
+   references dropped), and the Studio writes it to the draft in one patch.
+4. `compileSceneToReact` turns the scene into a self-contained React component
+   and stores it in the read-only `reactCode` field for developers to copy.
+5. The preview renders the scene with the primitive library. `validateScene`
+   lists issues beside it, and errors block publishing.
+6. A published animation is served at `/animations/<slug>` on the web app,
+   rendered by the same primitives.
+
+The model never writes code that runs. Strings render as React text, never as
+HTML, URLs or style values. `reactCode` is never evaluated by the Studio or
+the site. The optional code preview runs it only inside a sandboxed iframe
+without `allow-same-origin`.
+
+Design tokens (roles, springs, scene colours, badges, window chrome) come from
+[robotostudio.com/design.md](https://robotostudio.com/design.md) and
+[robotostudio.com/design/motion.md](https://robotostudio.com/design/motion.md).
+`pnpm tokens:sync` mirrors them into a read-only `designTokens` document,
+which generation hands to the model as `$designTokens`. Normalising,
+validating and rendering use `DEFAULT_TOKENS` in
+`packages/ui-animations/src/tokens.ts`. To use your own design system, edit
+`DEFAULT_TOKENS` (what renders) and point the sync at your own Markdown files
+(what the model is told).
+
+## Fast and Good modes
+
+| Mode | Agent Actions calls | What happens | Temperature |
+| --- | --- | --- | --- |
+| Fast | 1 | Generate writes the scene | 0.3 |
+| Good | 2 | Generate writes the scene, then a second Generate reviews it against the design tokens and the prompt and fixes what breaks the rules | 0.3, then 0 |
+
+Both modes use Agent Actions only. There is no model selection and no
+external LLM provider. Each run appends an entry to the `generationLog` field
+with the mode, the number of calls made, the status, any error and the
+duration. Generation runs only when the editor presses Generate (or
+Cmd/Ctrl+Enter in the prompt), never on keystroke or autosave. Cancel stops
+further calls, but a call already in flight is still billed.
+
+The refine pass uses Generate rather than Transform because Transform limits
+the interpolated instruction to 2,000 characters, and the rules plus the
+scene exceed that.
+
+## Architecture
 
 ```txt
 apps/
-  studio/   Sanity Studio
-  web/      Next.js frontend
+  studio/                 Sanity Studio 6
+    schemaTypes/documents/animation.ts       animation document schema
+    schemaTypes/documents/design-tokens.ts   designTokens singleton schema
+    components/animation-generator/          prompt, mode switch, Generate, preview
+  web/                    Next.js 16 site
+    src/app/animations/   /animations index and /animations/[slug]
 packages/
-  env/
-  logger/
-  sanity/
-  sanity-blocks/
-  tailwind-config/
-  typescript-config/
-  ui/
+  ui-animations/          scene contract and runtime
+    src/scene-spec.ts     SceneSpec types and enums
+    src/tokens.ts         DesignTokens and DEFAULT_TOKENS
+    src/normalize.ts      normalizeScene (auto-correct, never rejects)
+    src/validate.ts       validateScene (publish gate)
+    src/pipeline.ts       runGeneration (Agent Actions, Fast and Good)
+    src/compile.ts        compileSceneToReact
+    src/react/            Scene, Window, Element, Badge, Connector, Cursor, Ground
+    src/fixtures/         reference checkout scene and recorded Agent Actions replies
+  sanity-blocks/, sanity/, ui/, env/, logger/, tailwind-config/, typescript-config/
+                          shared packages from Turbo Start Sanity
+scripts/
+  tokens-sync.ts          pnpm tokens:sync
+  agent-actions-live.ts   pnpm agent:live (one real, capped generation run)
+  seed-checkout-animation.ts  pnpm seed:checkout
+docs/
+  spec.md                 full design and content model
+  architecture.md         data flow and package boundaries
+  deploying.md            Studio, schema, web app, CORS and demo setup
 ```
+
+More detail is in [docs/architecture.md](docs/architecture.md).
 
 ## Requirements
 
 - Node.js `>=24`
-- pnpm `11.24.0` — pinned via `packageManager`, so the simplest setup is
-  `corepack enable` and letting Corepack install the right version
-- A free [Sanity](https://www.sanity.io/) account
+- pnpm, the version pinned in `packageManager` (run `corepack enable`)
+- A [Sanity](https://www.sanity.io/) project on a plan with Agent Actions and
+  AI credits
 
-## Getting started
+## Quickstart
 
-There is no zero-config run: the web app validates its environment (and reads
-redirects from Sanity) at startup, so you need a Sanity project and API tokens
-before `pnpm dev` will boot. Steps 1–5 below take about five minutes.
+1. Clone and install:
 
-### 1. Get the code
+   ```sh
+   git clone https://github.com/robotostudio/sanity-ui-animations.git
+   cd sanity-ui-animations
+   corepack enable
+   pnpm install
+   ```
 
-Either scaffold a fresh project — this also creates a Sanity project and fills
-in the Studio env for you:
-
-```sh
-npm create sanity@latest -- --template robotostudio/turbo-start-sanity
-```
-
-…or clone the repository directly:
-
-```sh
-git clone https://github.com/robotostudio/turbo-start-sanity.git
-cd turbo-start-sanity
-corepack enable
-pnpm install
-```
-
-### 2. Create a Sanity project
-
-If you used `npm create sanity@latest` above, the project already exists — skip
-to step 3 below. Steps 3–5 are still required either way: the scaffold does not
-create API tokens or CORS origins, and the web app will not boot without them.
-
-1. Go to [sanity.io/manage](https://www.sanity.io/manage) and create a project.
-2. Note the **Project ID** and the **dataset** name (`production` by default).
-3. Under **API > Tokens**, create a token with the **Viewer** role. This is your
-   `SANITY_API_READ_TOKEN`, used for drafts, live preview, and Visual Editing.
-4. Create a second token with the **Editor** role for `SANITY_API_WRITE_TOKEN`.
-5. Under **API > CORS origins**, add `http://localhost:3000` with
+2. Create a Sanity project and dataset at
+   [sanity.io/manage](https://www.sanity.io/manage). Under **API > Tokens**,
+   create a Viewer token and an Editor token. Under **API > CORS origins**,
+   add `http://localhost:3000` and `http://localhost:3333` with
    **Allow credentials** enabled.
 
-### 3. Configure environment variables
+3. Copy the env templates and fill them in (see
+   [Environment variables](#environment-variables)):
 
-Copy the example env files:
+   ```sh
+   cp apps/studio/.env.example apps/studio/.env
+   cp apps/web/.env.example apps/web/.env
+   cp .env.example .env.local
+   ```
 
-```sh
-cp apps/web/.env.example apps/web/.env
-cp apps/studio/.env.example apps/studio/.env
-```
+4. Deploy the schema so Agent Actions can resolve the `animation` type:
 
-`apps/web/.env` — validated by `@sanity-ui-animations/env`, so the app refuses to start if
-a required value is missing:
+   ```sh
+   cd apps/studio
+   npx sanity schema deploy
+   cd ../..
+   ```
+
+   If the printed schema id is not `_.schemas.default`, set
+   `SANITY_STUDIO_SCHEMA_ID` to it.
+
+5. Optional: sync the design tokens into the dataset. Generation passes the
+   synced `designTokens` document to the model as `$designTokens`; without
+   it the model gets no design tokens. Rendering (the Studio preview and the
+   site) always uses `DEFAULT_TOKENS`.
+
+   ```sh
+   pnpm tokens:sync
+   ```
+
+6. Optional: load the template's sample content, so the page builder's home
+   page and blog are not empty. Without a published `homePage` document the
+   site's `/` returns 404; `/animations` does not need it.
+
+   ```sh
+   cd apps/studio
+   npx sanity dataset import seed-data.tar.gz <dataset> --replace
+   cd ../..
+   ```
+
+   `--replace` overwrites documents that already have the same `_id`.
+
+7. Start both apps:
+
+   ```sh
+   pnpm dev
+   ```
+
+   Studio: `http://localhost:3333`. Web: `http://localhost:3000`.
+
+8. In the Studio, create an Animation, enter a prompt, pick Fast and press
+   Generate. Publish it and open `http://localhost:3000/animations/<slug>`.
+
+To see a scene without spending AI credits, run `pnpm seed:checkout`. It
+publishes the reference checkout scene to the `development` dataset at
+`/animations/checkout-flow`.
+
+## Environment variables
+
+Every variable is listed in an `.env.example` file. None of them contain real
+values. Never commit a filled-in `.env`, `.env.local` or token.
+
+Root `.env.local` (template: [.env.example](.env.example)), read by the
+scripts in `scripts/`:
 
 | Variable | Required | Notes |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SANITY_PROJECT_ID` | yes | From sanity.io/manage |
-| `NEXT_PUBLIC_SANITY_DATASET` | yes | Usually `production` |
-| `NEXT_PUBLIC_SANITY_API_VERSION` | no | Defaults to today's UTC date if unset |
-| `NEXT_PUBLIC_SANITY_STUDIO_URL` | yes | `http://localhost:3333` locally |
-| `SANITY_API_READ_TOKEN` | yes | Viewer token — drafts, live preview, Visual Editing |
-| `SANITY_API_WRITE_TOKEN` | yes | Editor token. Validation requires it even though no runtime code reads it yet, so it must be set for `pnpm dev` and `pnpm build` to start |
-| `SANITY_REVALIDATE_SECRET` | no | Shared secret for the `/api/revalidate-sync-tags` webhook. The route rejects all requests while unset |
+| `SANITY_UI_ANIMATIONS_PROJECT_ID` | for scripts | Sanity project id |
+| `SANITY_UI_ANIMATIONS_DATASET` | for scripts | `development` by default. `pnpm seed:checkout` refuses any other dataset |
+| `SANITY_UI_ANIMATIONS_WRITE_TOKEN` | for scripts | Editor token used by `tokens:sync`, `seed:checkout` and `agent:live` |
+| `SANITY_STUDIO_SCHEMA_ID` | no | Schema id for `pnpm agent:live`. Defaults to `_.schemas.default` |
 
-`apps/studio/.env` — read via plain `process.env`, no schema validation:
+`apps/studio/.env` (template:
+[apps/studio/.env.example](apps/studio/.env.example)):
 
 | Variable | Required | Notes |
 | --- | --- | --- |
-| `SANITY_STUDIO_PROJECT_ID` | yes | Same project ID as the web app |
-| `SANITY_STUDIO_DATASET` | yes | Same dataset as the web app |
+| `SANITY_STUDIO_PROJECT_ID` | yes | Sanity project id |
+| `SANITY_STUDIO_DATASET` | yes | Dataset name |
+| `SANITY_STUDIO_SCHEMA_ID` | no | Deployed schema id Agent Actions use. Defaults to `_.schemas.default` |
 | `SANITY_STUDIO_TITLE` | no | Studio display name |
-| `SANITY_STUDIO_API_VERSION` | no | Defaults to today's UTC date if unset |
-| `SANITY_STUDIO_PRESENTATION_URL` | non-dev | The deployed web URL. Only `NODE_ENV=development` gets the `http://localhost:3000` default; anything else (production, `test`, unset) throws when this is missing |
-| `SANITY_STUDIO_APP_ID` | no | Empty until your first `sanity deploy` returns one — see [Deploying](#sanity-studio) |
-| `NEXT_PUBLIC_SITE_URL` | no | Used by the `invalidate-tags` Sanity Function, not by the Studio UI |
-| `SANITY_REVALIDATE_SECRET` | no | Same — must match the web app's value for cache invalidation to work |
+| `SANITY_STUDIO_API_VERSION` | no | Defaults to the current UTC date |
+| `SANITY_STUDIO_PRESENTATION_URL` | outside development | URL of the web app for the Presentation tool. Defaults to `http://localhost:3000` only when `NODE_ENV=development` |
+| `SANITY_STUDIO_APP_ID` | no | Returned by the first `sanity deploy` |
+| `NEXT_PUBLIC_SITE_URL` | no | Read by the `invalidate-tags` Sanity Function only |
+| `SANITY_REVALIDATE_SECRET` | no | Read by the `invalidate-tags` Sanity Function only. Must match the web app |
 
-Notes:
+`apps/web/.env` (template: [apps/web/.env.example](apps/web/.env.example)),
+validated at startup by `@sanity-ui-animations/env`:
 
-- Video is hosted on **Mux**, not stored in Sanity. There is no env var for it:
-  the first time an editor uploads a video, the Studio asks for a Mux Access
-  Token ID and Secret Key, and stores both in the dataset as `secrets.mux`.
-  Give that token Mux Video read and write plus Mux Data read, as the plugin's README requires — on a public dataset it is readable by anyone who can
-  query the dataset. Nothing else in the template needs a Mux account until
-  then.
-- Local development defaults are `http://localhost:3000` for the web app and
-  `http://localhost:3333` for Studio.
-- On Vercel, framework environment variables such as
-  `NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL` are auto-injected and used for
-  absolute URLs in features like `llms.txt` and Markdown output.
-- The `.env.example` files inside `packages/*` exist for template validation.
-  Only `apps/web` and `apps/studio` need env files to run the project.
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SANITY_PROJECT_ID` | yes | Sanity project id |
+| `NEXT_PUBLIC_SANITY_DATASET` | yes | Dataset name |
+| `NEXT_PUBLIC_SANITY_API_VERSION` | no | Defaults to the current UTC date |
+| `NEXT_PUBLIC_SANITY_STUDIO_URL` | yes | `http://localhost:3333` locally |
+| `SANITY_API_READ_TOKEN` | yes | Viewer token for drafts, live preview and Visual Editing |
+| `SANITY_API_WRITE_TOKEN` | yes | Editor token. Env validation requires it even though no runtime code reads it |
+| `SANITY_REVALIDATE_SECRET` | no | Secret for `/api/revalidate-sync-tags`. The route rejects requests while unset |
+| `AI_GATEWAY_API_KEY` | no | Only for the inherited FAQ ask box. Not used by animations |
+| `SANITY_CONTEXT_ENDPOINT`, `SANITY_CONTEXT_TOKEN` | no | Only for the inherited FAQ ask box |
+| `SANITY_E2E_SESSION_TOKEN`, `SANITY_E2E_DATASET`, `SANITY_E2E_FUNCTIONS_DEPLOYED` | no | Only for the Presentation e2e suite |
 
-### 4. Load the sample content
+The `.env.example` files under `packages/*` exist for Sanity template
+validation. Only the root, `apps/studio` and `apps/web` need env files.
 
-The template ships with seed data so the site is not blank on first run
-(`pnpm install` prints this reminder too):
-
-```sh
-cd apps/studio
-npx sanity dataset import seed-data.tar.gz production --replace
-```
-
-Replace `production` with your dataset name if it differs. `--replace`
-overwrites documents that already have the same `_id`.
-
-### 5. Start the apps
+## Commands
 
 ```sh
-pnpm dev
+pnpm dev              # Studio and web app
+pnpm dev:studio       # Studio only, port 3333
+pnpm dev:web          # Web app only, port 3000
+
+pnpm build            # Build everything
+pnpm lint             # Biome lint
+pnpm format           # Biome format (writes)
+pnpm format:check     # Biome format check
+pnpm check-types      # TypeScript
+pnpm test             # Vitest unit tests
+pnpm test:e2e         # Playwright smoke tests (needs a running or deployed site)
+
+pnpm --filter studio extract && pnpm type   # Regenerate Sanity types after schema changes
+
+pnpm tokens:sync      # Mirror design.md and motion.md into the designTokens document
+pnpm seed:checkout    # Publish the reference checkout animation (no AI calls)
+pnpm agent:live -- --id <animation-id> --mode fast|good --schema-deployed --confirm
+                      # One real Agent Actions run. Spends credits, capped at 10 calls in total
 ```
 
-Then open:
-
-- Web: `http://localhost:3000`
-- Studio: `http://localhost:3333`
-
-## Useful commands
-
-```sh
-pnpm dev              # Run all dev tasks through Turbo
-pnpm dev:web          # Next.js only
-pnpm dev:studio       # Sanity Studio only
-
-pnpm build            # Build all packages
-pnpm build:web        # Build the web app
-pnpm build:studio     # Build Studio
-
-pnpm lint             # Biome lint across the workspace
-pnpm format           # Biome format across the workspace
-pnpm format:check     # Check formatting without writing
-pnpm check-types      # TypeScript checks across the workspace
-pnpm type             # Run Sanity type generation tasks
-
-pnpm test             # Vitest unit tests (packages/sanity-blocks)
-pnpm test:e2e         # Playwright smoke tests against a running or deployed site
-pnpm --filter web test:e2e:presentation   # Studio → website loop, see Tests
-```
-
-## Tests
-
-`pnpm --filter web test:e2e:presentation` drives a real Studio against a
-production build of the site. Run it before a demo. It covers:
-
-| Area | Checks |
-| --- | --- |
-| Pages | Draft renders in Presentation, 404s publicly, publishes, deletes |
-| Live updates | An open tab updates without a reload |
-| Releases | A release previews and publishes |
-| Singletons | Navbar, footer and settings reach every route |
-| Slugs | Nested pages, rename, unpublish, sitemap |
-| Blocks | Every page-builder block renders and serializes to Markdown |
-| Guardrails | Validation, SEO/noindex, the revalidate webhook |
-
-It needs ports 3000 and 3333 free, and `SANITY_E2E_SESSION_TOKEN` — an
-Editor-role token, though `SANITY_API_WRITE_TOKEN` works locally. The Releases
-test needs `NEXT_PUBLIC_SANITY_API_VERSION` unset or `>= 2025-02-19`, and skips
-itself with that message otherwise.
-
-It runs against its own dataset, never production. Create it once from the
-dataset that holds your content:
-
-```sh
-cd apps/studio
-npx sanity dataset copy production e2e
-```
-
-Override the name with `SANITY_E2E_DATASET`. A separate dataset is required
-because the singleton test publishes into the real `navbar`, `footer` and
-`settings`, which cannot carry a prefix. Everything else is prefixed
-`e2e-<runId>-` and deleted afterwards. Still one run at a time
-per dataset — the singletons are shared. CI builds and serves both halves inside
-the runner and runs the same specs on every PR.
-
-## Content model
-
-The Studio currently includes these document types:
-
-- Singletons: `homePage`, `blogIndex`, `settings`, `footer`, `navbar`
-- Documents: `blog`, `page`, `faq`, `author`, `redirect`
-
-The document definitions live in
-`apps/studio/schemaTypes/documents`, and the shared page-builder blocks live in
-`packages/sanity-blocks/src` — one directory per block, each holding its schema,
-GROQ projection, React component, Markdown serializer, and its insert-menu
-thumbnail.
-
-After schema changes, regenerate types with:
-
-```sh
-pnpm --filter studio extract
-pnpm type
-```
-
-Both, in that order — typegen reads the committed `apps/studio/schema.json`,
-so `pnpm type` alone regenerates a stale schema and still reports success.
-
-Generated types land in `packages/sanity/src/sanity.types.ts`; the frontend
-derives every content type from that file rather than redeclaring shapes. See
-[CLAUDE.md](CLAUDE.md) for the architecture in detail, including the checklist
-for adding a new page-builder block.
-
-## Documenting your routes
-
-The Studio tells editors what fields exist, not what any document *does* or which
-URL it ends up at. [`sanity-plugin-md-notes`](https://www.npmjs.com/package/sanity-plugin-md-notes)
-fixes that: drop a `<schemaName>.help.md` next to a schema and editors get a Help
-panel inside the Studio, rendered from your markdown.
-
-Rather than ship help files that won't match your content model, paste the prompt
-below into Claude Code (or your agent of choice). It installs the plugin, works out
-what routes your site actually has by reading your schemas and querying your
-dataset, and writes the documentation against your content.
-
-```
-Document every route in this project.
-
-This repo is Turbo Start Sanity: a pnpm/Turborepo monorepo with a Vite-based Sanity
-Studio in `apps/studio` and a Next.js frontend in `apps/web`. You're going to install
-`sanity-plugin-md-notes`, which turns a `<schemaName>.help.md` file sitting next to a
-schema into a Help panel inside the Studio, and then write those files for every route
-this site has.
-
-1. Install and register the plugin
-
-Read the plugin README and follow its Vite setup, not the Turbopack/codegen one -
-this Studio runs on `sanity dev`. npmjs.com returns 403 to programmatic fetches, so
-pull the README from the registry instead:
-`curl -s https://registry.npmjs.org/sanity-plugin-md-notes | jq -r .readme`
-
-Document the four URL-owning types at minimum (`homePage`, `page`, `blogIndex`,
-`blog`) plus `redirect`. The global config types (`navbar`, `footer`, `settings`)
-and reference-only types (`author`, `faq`) are optional - say which you chose.
-
-You need three things:
-
-- `helpPlugin({ files })` in the `plugins` array of `apps/studio/sanity.config.ts`,
-  with `files` from `import.meta.glob("./schemaTypes/**/*.help.md", { eager: true,
-  query: "?raw", import: "default" })`
-- `defaultDocumentNode: withHelpDefaultDocumentNode()` on the existing
-  `structureTool(...)` call
-- `withHelp()` wrapped around each document schema you intend to document
-
-One thing will bite you. `apps/studio/tsconfig.json` sets `"types": []`, so
-`import.meta.glob` won't typecheck and the build fails with `Property 'glob' does
-not exist on type 'ImportMeta'`. Add `"vite/client"`.
-
-Leave the page-builder block schemas in `packages/sanity-blocks` alone. `apps/web`
-imports that package, and `withHelp` would pull a Studio-only dependency into the
-frontend's dependency graph. Document types only.
-
-2. Work out what the routes actually are
-
-Don't infer routes from the files in `apps/web/src/app`. Only a handful are static.
-The real inventory is the home page, every `page` document's slug, the blog index,
-and every `blog` document's slug. Work it out from the content, not the filesystem:
-
-a. List the document types in `apps/studio/schemaTypes/documents/`. Mark which own a
-   URL, which are global config consumed by the layout (navbar, footer, settings),
-   and which are only ever referenced by other documents (author, faq).
-b. For each URL-owning type, read its route file in `apps/web/src/app`, the GROQ
-   query in `packages/sanity/src/query.ts` that feeds it, and its entry in
-   `apps/studio/utils/slug-validation.ts`. Note the exact query names and paths.
-   You'll cite them.
-c. Query the dataset for the live slugs of each type, so you document real URLs
-   rather than hypothetical ones. `apps/web/src/app/llms.txt/route.ts` already does
-   this exact enumeration. Read it first. If no dataset is configured, fall back to
-   the seed data in `apps/studio/seed-data.tar.gz`.
-d. Trace everything downstream of each type: `sitemap.ts`, `llms.txt`, the `.md` twin
-   rewrite in `apps/web/src/proxy.ts`, build-time redirects in
-   `apps/web/next.config.ts`, and the Presentation mapping in
-   `apps/studio/location.ts`.
-e. Collect the rules an editor can trip over: reserved slug prefixes, required exact
-   slugs, uniqueness constraints, and anything that fires automatically on publish
-   (this template mints a `redirect` document whenever a published slug changes).
-
-Write the inventory out as a table before you start writing help files, so it can be
-checked against what you produce.
-
-3. Write the help files
-
-One `<schemaName>.help.md` per wrapped schema, in `apps/studio/schemaTypes/documents/`.
-The glob root is `schemaTypes/` - files anywhere else produce an empty map and no
-error.
-
-The filename must equal the schema's `name:` exactly, because the plugin keys its
-registry on the basename. `blog-index.ts` declares `name: "blogIndex"`, so it needs
-`blogIndex.help.md`. A mismatch fails silently: the Help icon just never appears.
-
-This knowingly breaks the kebab-case file convention in `CLAUDE.md`. Follow the
-plugin, not the convention, and add a note to `CLAUDE.md` saying why.
-
-Write for a non-technical editor. Each file:
-
-- `lastUpdated` frontmatter with today's date
-- One sentence on what the document type is for
-- The URL it produces, with a real example taken from the dataset
-- A table of the slug rules
-- What happens when you publish it: redirects, revalidation, anything automatic
-- Where it surfaces beyond its own page (navigation, sitemap, `llms.txt`, `.md` twin)
-- `> [!WARNING]` for anything destructive or irreversible, `> [!IMPORTANT]` for rules
-  that will reject a save
-
-Cross-link sibling types with in-Studio intent links. Editing an existing document is
-`[Navigation](/structure/intent/edit/id=navbar;type=navbar)`; creating a new one is
-`[Redirects](/structure/intent/create/type=redirect)`. Querystring syntax crashes the
-router. The format is semicolon-separated path segments and the `/structure/` prefix
-is required.
-
-4. Verify
-
-`S.document()` bypasses `defaultDocumentNode`, so every call site needs
-`helpView(S, { schemaType })` spread into `.views([...])` or the tab silently never
-appears. There are two files to fix, not one:
-
-- `apps/studio/structure.ts` - the singletons. Note `blogIndex` already calls
-  `.views([S.view.form()])`; extend that array rather than replacing it.
-- `apps/studio/components/nested-pages-structure.ts` - three more call sites, which
-  build every `page` document under "Pages by Path". Miss these and Pages, the
-  most-edited type, has no Help tab on that route. Reaching a Page via "All Pages"
-  goes through `S.documentTypeListItem` and does get the tab, so the bug looks fixed
-  unless you check "Pages by Path" specifically.
-
-Run `pnpm dev:studio` and open a document of each type, including a singleton and a
-Page reached via "Pages by Path". Confirm the Help inspector (book icon, top right)
-renders your markdown.
-
-Finish with `pnpm check-types`, `pnpm lint` and `pnpm format:check`.
-```
-
-Wrapping schemas in `withHelp()` reindents them, so review the resulting diff with
-`git diff -w`.
-
-## Notable features
-
-- Page-builder architecture backed by shared block schemas and renderers
-- Video through Mux — one upload per clip, adaptive streaming, no format matrix
-- Sanity Visual Editing / Presentation integration
-- Blog index and blog post routes
-- Redirect support managed in Sanity
-- Markdown twins for pages via `.md` URLs and `Accept: text/markdown`
-- `llms.txt` generation at `/llms.txt`
-- Copy-paste prompt for documenting your routes inside the Studio
-- GitHub Actions for CI, template validation, E2E smoke tests, and Studio deploy
+The unit and pipeline tests run against recorded Agent Actions replies in
+`packages/ui-animations/src/fixtures/agent-actions`, so they make no network
+calls and cost nothing.
 
 ## Deploying
 
-### Web app
+See [docs/deploying.md](docs/deploying.md). In short:
 
-The frontend is intended to be deployed from `apps/web`.
+- **Studio**: `cd apps/studio && pnpm run deploy`, or the manual
+  `Deploy Sanity Studio` GitHub Actions workflow.
+- **Schema**: `npx sanity schema deploy` from `apps/studio` whenever the
+  `animation` schema changes, or Agent Actions will use the old one.
+- **Web app**: deploy `apps/web` (for example on Vercel with the root
+  directory set to `apps/web`) with the variables from `apps/web/.env.example`.
+- **CORS**: add every web app and Studio origin under **API > CORS origins**
+  in sanity.io/manage, with credentials allowed.
 
-For Vercel:
+## Costs
 
-1. Create a new project from this repository.
-2. Set the Root Directory to `apps/web`.
-3. Add the web environment variables from `apps/web/.env.example`.
-4. Add your production domain to Sanity CORS origins.
-
-### Sanity Studio
-
-Studio can be deployed locally from `apps/studio`:
-
-```sh
-cd apps/studio
-pnpm run deploy
-```
-
-Use `pnpm run deploy`, not `pnpm deploy` — the latter is pnpm's own built-in
-command and will not run this script.
-
-The first Studio deploy must be done locally so Sanity can create the hosted
-Studio app and return an app ID. Save that value as `SANITY_STUDIO_APP_ID` for
-future deploys.
-
-This repository also includes a manual GitHub Actions workflow at
-`.github/workflows/deploy-sanity.yml`. It is triggered with
-`workflow_dispatch`, not automatically on every push.
-
-To use that workflow, configure these GitHub repository secrets:
-
-- `SANITY_DEPLOY_TOKEN`
-- `SANITY_STUDIO_PROJECT_ID`
-- `SANITY_STUDIO_DATASET`
-- `SANITY_STUDIO_TITLE`
-- `SANITY_STUDIO_PRESENTATION_URL`
-- `SANITY_STUDIO_APP_ID`
-
-### Configure Sanity CORS origins
-
-Add your web app URLs in Sanity Manage under **API > CORS origins**:
-
-- your production URL
-- your custom domain, if you use one
-- `http://localhost:3000` for local development
-
-Enable credentials for origins that need authenticated preview or visual
-editing requests.
-
-## Troubleshooting
-
-**`pnpm dev` exits immediately with an env validation error.** `apps/web` reads
-`@sanity-ui-animations/env` from `next.config.ts`, so every required variable in the table
-above must be present before the dev server starts — including
-`SANITY_API_WRITE_TOKEN`.
-
-**The web app starts but every page 404s or the site looks empty.** The dataset
-has no content yet. Run the seed import in step 4, or publish a `homePage`
-document in the Studio.
-
-**Studio loads but Presentation shows a blank or blocked preview.** Add
-`http://localhost:3000` to **API > CORS origins** in sanity.io/manage with
-credentials allowed.
-
-**`sanity deploy` asks for a Studio host every time.** Copy the app ID returned
-by the first deploy into `SANITY_STUDIO_APP_ID`.
-
-**Wrong pnpm version.** Run `corepack enable`; the repo pins pnpm through the
-`packageManager` field.
+Each Agent Actions request costs one AI credit. Fast spends one credit per
+run and Good spends two, and the mode labels in the Studio say so. Spend is
+capped by the organisation spending limit in Sanity Manage. Past the cap,
+requests return 429 and the Studio shows a budget message.
 
 ## Contributing
 
-Bug reports and pull requests are welcome — see
-[CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and the checks CI runs, and
-[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Security issues should be reported
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md)
+and the [code of conduct](CODE_OF_CONDUCT.md). Report security issues
 privately as described in [SECURITY.md](SECURITY.md).
-
-## Workflows
-
-The repository currently ships with:
-
-- `.github/workflows/ci.yml`: lint, format check, type check, and unit tests on
-  push/PR to `main`
-- `.github/workflows/e2e.yml`: Playwright smoke and Presentation tests on
-  successful deployment status events
-- `.github/workflows/deploy-sanity.yml`: manual Studio deploy workflow
-- `.github/workflows/sanity-template.yml`: Sanity template validation on `main`
 
 ## License
 
