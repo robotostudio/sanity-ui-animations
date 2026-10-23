@@ -13,7 +13,8 @@
     "check-types": "tsc --noEmit",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:presentation": "playwright test --config playwright.presentation.config.ts"
+    "test:e2e:presentation": "playwright test --config playwright.presentation.config.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@ai-sdk/mcp": "^2.0.60",
@@ -41,12 +42,14 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
+    "@sanity-ui-animations/typescript-config": "workspace:*",
     "@sanity/codegen": "^8.1.0",
     "@tailwindcss/postcss": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@sanity-ui-animations/typescript-config": "workspace:*",
-    "dotenv": "^17.4.2"
+    "@vitejs/plugin-react": "^6.1.1",
+    "dotenv": "^17.4.2",
+    "vitest": "catalog:"
   }
 }
