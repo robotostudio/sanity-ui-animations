@@ -62,10 +62,12 @@ without `allow-same-origin`.
 Design tokens (roles, springs, scene colours, badges, window chrome) come from
 [robotostudio.com/design.md](https://robotostudio.com/design.md) and
 [robotostudio.com/design/motion.md](https://robotostudio.com/design/motion.md).
-`pnpm tokens:sync` mirrors them into a read-only `designTokens` document.
-Anything missing falls back to `DEFAULT_TOKENS` in
-`packages/ui-animations/src/tokens.ts`. To use your own design system, point
-the sync at your own Markdown files or edit `DEFAULT_TOKENS`.
+`pnpm tokens:sync` mirrors them into a read-only `designTokens` document,
+which generation hands to the model as `$designTokens`. Normalising,
+validating and rendering use `DEFAULT_TOKENS` in
+`packages/ui-animations/src/tokens.ts`. To use your own design system, edit
+`DEFAULT_TOKENS` (what renders) and point the sync at your own Markdown files
+(what the model is told).
 
 ## Fast and Good modes
 
@@ -163,8 +165,10 @@ More detail is in [docs/architecture.md](docs/architecture.md).
    If the printed schema id is not `_.schemas.default`, set
    `SANITY_STUDIO_SCHEMA_ID` to it.
 
-5. Optional: sync the design tokens into the dataset. Without this the
-   Studio and site use `DEFAULT_TOKENS`.
+5. Optional: sync the design tokens into the dataset. Generation passes the
+   synced `designTokens` document to the model as `$designTokens`; without
+   it the model gets no design tokens. Rendering (the Studio preview and the
+   site) always uses `DEFAULT_TOKENS`.
 
    ```sh
    pnpm tokens:sync
