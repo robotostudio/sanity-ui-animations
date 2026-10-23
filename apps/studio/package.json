@@ -17,7 +17,9 @@
     "check-types": "tsc --noEmit",
     "type": "sanity typegen generate && biome format --write ../../packages/sanity/src/sanity.types.ts",
     "sync-thumbnails": "node --experimental-strip-types ../../packages/sanity-blocks/scripts/sync-thumbnails.ts --target-root ../../apps/studio/static/thumbnails --file-prefix preview-",
-    "postinstall": "sanity exec scripts/cli-alert-for-data.ts && pnpm sync-thumbnails"
+    "postinstall": "sanity exec scripts/cli-alert-for-data.ts && pnpm sync-thumbnails",
+    "test": "vitest run",
+    "harness": "vite --config harness/vite.config.mts"
   },
   "keywords": [
     "sanity"
@@ -50,8 +52,13 @@
   },
   "devDependencies": {
     "@sanity/blueprints": "^0.24.0",
+    "@testing-library/react": "^16.3.3",
     "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "^6.1.1",
+    "jsdom": "^29.1.1",
     "typescript": "catalog:",
-    "vite": "^8.3.1"
+    "vite": "^8.3.1",
+    "vitest": "catalog:"
   }
 }

@@ -5,6 +5,7 @@ import {
   SCENE_MODES,
   SCENE_THEMES,
   STEP_ACTIONS,
+  sceneValidation,
   WINDOW_KINDS,
 } from "@sanity-ui-animations/ui-animations";
 import { Clapperboard } from "lucide-react";
@@ -14,6 +15,10 @@ import {
   defineType,
   type ConditionalPropertyCallback,
 } from "sanity";
+
+import { AnimationDocumentInput } from "@/components/animation-generator/animation-document-input";
+import { GenerationModeInput } from "@/components/animation-generator/generation-mode-input";
+import { generationModeOptions } from "@/components/animation-generator/mode-options";
 
 /**
  * Everything except the prompt is hidden until the editor ticks "Show
@@ -368,6 +373,12 @@ const scene = defineField({
   description:
     "The structured animation: square canvas, macOS windows with rows and cards, connectors, a cursor path and an ordered list of steps. Generated from the prompt; mirrors SceneSpec in @sanity-ui-animations/ui-animations.",
   hidden: hiddenUnlessAdvanced,
+  // validateScene's errors block publishing; its warnings are shown only.
+  // See docs/spec.md, "Auto-correct, then hard validation".
+  validation: (Rule) => [
+    Rule.custom((value) => sceneValidation(value, "error")),
+    Rule.custom((value) => sceneValidation(value, "warning")).warning(),
+  ],
   fields: [
     defineField({
       name: "sceneMode",
@@ -488,6 +499,7 @@ export const animation = defineType({
   icon: Clapperboard,
   description:
     "A UI animation generated from a prompt and drawn in Roboto Studio's Scene style.",
+  components: { input: AnimationDocumentInput },
   fields: [
     defineField({
       name: "title",
@@ -519,11 +531,9 @@ export const animation = defineType({
       type: "string",
       description:
         "Fast makes one AI request. Good makes two: it generates, then refines against the design rules. Each request costs one AI credit.",
+      components: { input: GenerationModeInput },
       options: {
-        list: [
-          { title: "Fast", value: "fast" },
-          { title: "Good", value: "good" },
-        ],
+        list: generationModeOptions,
         layout: "radio",
         direction: "horizontal",
       },
@@ -545,7 +555,7 @@ export const animation = defineType({
       type: "text",
       rows: 12,
       description:
-        "React source compiled from the scene, for developers to copy. Regenerated automatically; never edited by hand and never run by the Studio or website.",
+        "React source compiled from the scene, for developers to copy. Regenerated automatically and never edited by hand. The website never runs it; the Studio's Code preview runs it only in a sandboxed frame.",
       readOnly: true,
       hidden: hiddenUnlessAdvanced,
     }),

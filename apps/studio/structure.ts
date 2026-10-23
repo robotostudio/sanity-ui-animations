@@ -12,14 +12,18 @@ import {
   PanelBottom,
   PanelTop,
   Settings2,
+  SlidersHorizontal,
+  Sparkles,
   TrendingUpDown,
   User,
 } from "lucide-react";
 import type {
+  DefaultDocumentNodeResolver,
   StructureBuilder,
   StructureResolverContext,
 } from "sanity/structure";
 
+import { AnimationView } from "@/components/animation-generator/animation-view";
 import { createSlugBasedStructure } from "@/components/nested-pages-structure";
 import type { SchemaType, SingletonType } from "@/schemaTypes/index";
 import { getTitleCase } from "@/utils/helper";
@@ -169,3 +173,23 @@ export const structure = (
             ])
         ),
     ]);
+
+/**
+ * Animations open on the full-width Generate view; Fields is the plain form
+ * (title, URL, prompt and, behind "Show advanced fields", the scene data).
+ * Set here rather than on the list item so search and intents get it too.
+ */
+export const defaultDocumentNode: DefaultDocumentNodeResolver = (
+  S,
+  { schemaType }
+) =>
+  schemaType === "animation"
+    ? S.document().views([
+        S.view
+          .component(AnimationView)
+          .id("generate")
+          .title("Generate")
+          .icon(Sparkles),
+        S.view.form().id("fields").title("Fields").icon(SlidersHorizontal),
+      ])
+    : S.document();
