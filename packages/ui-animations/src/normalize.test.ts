@@ -487,3 +487,10 @@ describe("normalizeScene", () => {
     });
   });
 });
+
+describe("normalizeScene output", () => {
+  it("is JSON-safe, so the draft stores exactly what was normalised", () => {
+    const scene = normalizeScene(checkoutScene);
+    expect(JSON.parse(JSON.stringify(scene))).toStrictEqual(scene);
+  });
+});
