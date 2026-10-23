@@ -324,8 +324,9 @@ animations.
   the published animation into `drafts.<id>` with `createIfNotExists`, as the
   Studio does on first edit.
 - **Assumption (confirm with Jono):** `compileSceneToReact` bakes the theme
-  colours and its own layout metrics (52px title bar, 44/64/40px rows, cards
-  and buttons) into the output. The emitted component needs only React, until
+  colours and the Scene renderer's layout (`react/layout.ts`: 44px title bar,
+  40px rows and buttons, 64px cards, cursor rest points) and timing into the
+  output, so the copied code draws what the Preview tab draws. The emitted component needs only React, until
   the primitive library can be published for it to import.
 - **Assumption (confirm with Jono):** anyone who can edit an animation can
   generate. The Studio already makes the form read-only for users without

@@ -1,5 +1,6 @@
 import {
   cursorDestination,
+  cursorRestPoint,
   cursorStart,
   LAYOUT,
   type Point,
@@ -179,8 +180,12 @@ function sceneData(spec: SceneSpec, tokens: DesignTokens) {
     };
   });
 
+  // Where the Preview's cursor tip rests (react/layout.ts): just below and
+  // across the target, not over its centre. The step timing below measures
+  // glides between these same points.
   const targets = list(spec.cursor?.targets).map((target) => {
-    const point = pointOf(target);
+    const point =
+      guarded(() => cursorRestPoint(spec, target)) ?? pointOf(target);
     return { id: str(target.id), x: point.x, y: point.y };
   });
 
@@ -653,8 +658,8 @@ export default function SceneAnimation() {
               position: "absolute",
               top: 0,
               transform:
-                "translate(" + String(state.cursor.x + 6) + "px, " +
-                String(state.cursor.y + 6) + "px) scale(" +
+                "translate(" + String(state.cursor.x) + "px, " +
+                String(state.cursor.y) + "px) scale(" +
                 (state.pressed ? "0.8" : "1") + ")",
               transition:
                 "transform " + String(state.cursorMotion.durationMs) + "ms " +
