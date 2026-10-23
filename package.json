@@ -37,13 +37,15 @@
     "type": "turbo run type",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
-    "tokens:sync": "node --experimental-strip-types scripts/tokens-sync.ts",
+    "tokens:sync": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/tokens-sync.ts",
     "agent:live": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/ts-resolve.mjs scripts/agent-actions-live.ts",
     "seed:checkout": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/ts-resolve.mjs scripts/seed-checkout-animation.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
+    "@sanity-ui-animations/logger": "workspace:*",
     "@sanity-ui-animations/typescript-config": "workspace:*",
+    "@sanity-ui-animations/ui-animations": "workspace:*",
     "@sanity/client": "catalog:",
     "turbo": "^2.11.5",
     "typescript": "catalog:"

@@ -32,7 +32,7 @@ contracts named here.
 | Generator input + preview | `apps/studio/components/animation-generator/` | done |
 | Primitive library (React) | `packages/ui-animations/src/react` (`./react` export) | done |
 | `/animations/[slug]`, `/animations` | `apps/web/src/app/animations` | done |
-| `pnpm tokens:sync` | `scripts/tokens-sync.ts` | placeholder |
+| `pnpm tokens:sync` | `scripts/tokens-sync.ts`, parser in `packages/ui-animations/src/tokens-parse.ts` | done |
 | Checkout fixtures, pipeline e2e, web e2e, `pnpm seed:checkout` | `packages/ui-animations/src/pipeline.e2e.test.tsx`, `apps/web/tests/e2e/animation-checkout.spec.ts`, `scripts/seed-checkout-animation.ts` | done |
 
 ## User flow
@@ -360,3 +360,9 @@ animations.
   Babel standalone (unpkg) and React 19.2 (esm.sh) into its sandboxed frame,
   so it needs network access to those CDNs. The frame mounts only while the
   tab is open.
+- **Assumption (confirm with Jono):** `tokens:sync` parses only the Roles,
+  Springs and Scene tokens tables and the Badges bullet. `tide`,
+  `windowChrome` and the traffic-light greys are written from
+  `DEFAULT_TOKENS` without a warning, and a failed fetch of either file
+  aborts the sync instead of writing defaults. A rerun against unchanged
+  files rewrites the same document; only `syncedAt` and `_rev` change.
