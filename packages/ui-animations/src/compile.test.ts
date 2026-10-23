@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { compileSceneToReact } from "./compile";
 import { checkoutScene } from "./fixtures/checkout";
-import { elementRects } from "./react/layout";
+import { cursorRestPoint, elementRects } from "./react/layout";
 import { buildTimeline } from "./react/timeline";
 import type { SceneSpec } from "./scene-spec";
 import { DEFAULT_TOKENS } from "./tokens";
@@ -50,6 +50,7 @@ type CompiledScene = {
     elements: { id: string; x: number; y: number; w: number; h: number }[];
   }[];
   steps: { key: string; at: number; durationMs: number }[];
+  cursor: { targets: { id: string; x: number; y: number }[] } | null;
 };
 
 /** The scene data the compiled component reads, as plain JSON. */
@@ -200,6 +201,19 @@ describe("compileSceneToReact", () => {
         }).toEqual(rect);
       }
     }
+  });
+
+  it("rests the cursor where the Scene renderer does", () => {
+    const compiled = compiledScene(compileSceneToReact(checkoutScene));
+    const targets = checkoutScene.cursor?.targets ?? [];
+    expect(targets.length).toBeGreaterThan(0);
+
+    expect(compiled.cursor?.targets).toEqual(
+      targets.map((target) => ({
+        id: target.id,
+        ...cursorRestPoint(checkoutScene, target),
+      }))
+    );
   });
 
   it("times every step as the Scene timeline does, cursor moves by distance", () => {

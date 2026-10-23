@@ -198,13 +198,13 @@ const SCENE: Scene = {
     "targets": [
       {
         "id": "target-apply",
-        "x": 228,
-        "y": 360,
+        "x": 300.15999999999997,
+        "y": 384,
       },
       {
         "id": "target-pay",
-        "x": 228,
-        "y": 408,
+        "x": 300.15999999999997,
+        "y": 432,
       },
     ],
   },
@@ -638,8 +638,8 @@ export default function SceneAnimation() {
               position: "absolute",
               top: 0,
               transform:
-                "translate(" + String(state.cursor.x + 6) + "px, " +
-                String(state.cursor.y + 6) + "px) scale(" +
+                "translate(" + String(state.cursor.x) + "px, " +
+                String(state.cursor.y) + "px) scale(" +
                 (state.pressed ? "0.8" : "1") + ")",
               transition:
                 "transform " + String(state.cursorMotion.durationMs) + "ms " +
