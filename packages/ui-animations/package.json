@@ -29,6 +29,7 @@
     "./scene-spec": "./src/scene-spec.ts",
     "./tokens": "./src/tokens.ts",
     "./fixtures/*": "./src/fixtures/*.ts",
+    "./tokens-parse": "./src/tokens-parse.ts",
     "./react": "./src/react/index.ts"
   },
   "peerDependencies": {
