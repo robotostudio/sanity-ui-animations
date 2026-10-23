@@ -1,0 +1,246 @@
+import ts from "typescript";
+import { describe, expect, it } from "vitest";
+
+import { compileSceneToReact } from "./compile";
+import { checkoutScene } from "./fixtures/checkout";
+import { cursorRestPoint, elementRects } from "./react/layout";
+import { buildTimeline } from "./react/timeline";
+import type { SceneSpec } from "./scene-spec";
+import { DEFAULT_TOKENS } from "./tokens";
+
+const INJECTIONS = [
+  '"});alert(1)//',
+  // biome-ignore lint/suspicious/noTemplateCurlyInString: an injection payload
+  "`${alert(1)}`",
+  // biome-ignore lint/suspicious/noTemplateCurlyInString: an injection payload
+  "${globalThis.pwned = 1}",
+  "</script><script>alert(1)</script>",
+  "'; alert(1); '",
+  '\\"; alert(1); //',
+  "line\u2028break\u2029here",
+  "{alert(1)}",
+];
+
+function parse(code: string) {
+  return ts.createSourceFile(
+    "scene.tsx",
+    code,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX
+  );
+}
+
+function syntaxErrors(code: string): string[] {
+  const out = ts.transpileModule(code, {
+    fileName: "scene.tsx",
+    reportDiagnostics: true,
+    compilerOptions: { jsx: ts.JsxEmit.Preserve },
+  });
+  return (out.diagnostics ?? []).map((d) =>
+    ts.flattenDiagnosticMessageText(d.messageText, "\n")
+  );
+}
+
+type CompiledScene = {
+  windows: {
+    id: string;
+    x: number;
+    y: number;
+    elements: { id: string; x: number; y: number; w: number; h: number }[];
+  }[];
+  steps: { key: string; at: number; durationMs: number }[];
+  cursor: { targets: { id: string; x: number; y: number }[] } | null;
+};
+
+/** The scene data the compiled component reads, as plain JSON. */
+function compiledScene(code: string): CompiledScene {
+  const start = code.indexOf("const SCENE: Scene = ") + 21;
+  const end = code.indexOf(";\n", start);
+  // literal() emits JSON with trailing commas.
+  return JSON.parse(code.slice(start, end).replace(/,(\s*[}\]])/g, "$1"));
+}
+
+/** Every string literal value in the program, decoded. */
+function stringLiterals(code: string): string[] {
+  const found: string[] = [];
+  const visit = (node: ts.Node) => {
+    if (ts.isStringLiteral(node)) {
+      found.push(node.text);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(parse(code));
+  return found;
+}
+
+/** Every identifier the program names, e.g. to catch a smuggled `alert`. */
+function identifiers(code: string): Set<string> {
+  const found = new Set<string>();
+  const visit = (node: ts.Node) => {
+    if (ts.isIdentifier(node)) {
+      found.add(node.text);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(parse(code));
+  return found;
+}
+
+function withLabels(label: string): SceneSpec {
+  const [cart, payments] = checkoutScene.windows;
+  if (!(cart && payments)) {
+    throw new Error("checkout fixture changed shape");
+  }
+  return {
+    ...checkoutScene,
+    label,
+    windows: [
+      {
+        ...cart,
+        title: label,
+        id: label,
+        elements: cart.elements.map((element) => ({
+          ...element,
+          label,
+          value: label,
+          badge: element.badge && { ...element.badge, label },
+        })),
+      },
+      payments,
+    ],
+    steps: checkoutScene.steps.map((step) =>
+      step.action === "update" ? { ...step, value: label } : step
+    ),
+  };
+}
+
+describe("compileSceneToReact", () => {
+  it.each(INJECTIONS)("keeps %j an inert string literal", (payload) => {
+    const code = compileSceneToReact(withLabels(payload));
+
+    expect(syntaxErrors(code)).toEqual([]);
+    expect(stringLiterals(code)).toContain(payload);
+    expect(identifiers(code).has("alert")).toBe(false);
+    expect(identifiers(code).has("pwned")).toBe(false);
+    expect(code).not.toContain("</script");
+    expect(code).not.toContain("${");
+    expect(code).not.toContain("\u2028");
+  });
+
+  it("leaves data that looks like a template placeholder alone", () => {
+    const code = compileSceneToReact(withLabels("__THEME__ __SCENE__"));
+
+    expect(syntaxErrors(code)).toEqual([]);
+    expect(stringLiterals(code)).toContain("__THEME__ __SCENE__");
+    expect(code).toMatch(/const THEME = \{/);
+  });
+
+  it("escapes design-token strings too, since they come from the dataset", () => {
+    const payload = '"});alert(1)//</script>';
+    const code = compileSceneToReact(checkoutScene, {
+      ...DEFAULT_TOKENS,
+      badges: {
+        ...DEFAULT_TOKENS.badges,
+        colors: { ...DEFAULT_TOKENS.badges.colors, success: payload },
+      },
+    });
+
+    expect(syntaxErrors(code)).toEqual([]);
+    expect(stringLiterals(code)).toContain(payload);
+    expect(identifiers(code).has("alert")).toBe(false);
+  });
+
+  it("drops values that are not strings instead of emitting them", () => {
+    const scene = {
+      ...checkoutScene,
+      label: { toString: "alert(1)" },
+    } as unknown as SceneSpec;
+    const code = compileSceneToReact(scene);
+
+    expect(syntaxErrors(code)).toEqual([]);
+    expect(code).not.toContain("alert");
+  });
+
+  it("emits no dynamic code paths", () => {
+    const code = compileSceneToReact(checkoutScene);
+
+    expect(code).not.toMatch(/\beval\b|new Function|import\(/);
+    expect(code).not.toContain("dangerouslySetInnerHTML");
+  });
+
+  it("keeps prices readable", () => {
+    const code = compileSceneToReact(checkoutScene);
+
+    expect(code).toContain('"label": "Wireless headphones"');
+    expect(code).toContain('"value": "$120"');
+  });
+
+  it("is deterministic, whatever order the spec's keys arrive in", () => {
+    const shuffled = Object.fromEntries(
+      Object.entries(checkoutScene).reverse()
+    ) as SceneSpec;
+
+    expect(compileSceneToReact(shuffled)).toBe(
+      compileSceneToReact(checkoutScene)
+    );
+  });
+
+  it("lays out elements where the Scene renderer does", () => {
+    const compiled = compiledScene(compileSceneToReact(checkoutScene));
+    for (const sceneWindow of checkoutScene.windows) {
+      const rects = elementRects(sceneWindow);
+      const out = compiled.windows.find((w) => w.id === sceneWindow.id);
+      for (const element of out?.elements ?? []) {
+        const rect = rects.get(element.id);
+        expect({
+          x: out!.x + element.x,
+          y: out!.y + element.y,
+          w: element.w,
+          h: element.h,
+        }).toEqual(rect);
+      }
+    }
+  });
+
+  it("rests the cursor where the Scene renderer does", () => {
+    const compiled = compiledScene(compileSceneToReact(checkoutScene));
+    const targets = checkoutScene.cursor?.targets ?? [];
+    expect(targets.length).toBeGreaterThan(0);
+
+    expect(compiled.cursor?.targets).toEqual(
+      targets.map((target) => ({
+        id: target.id,
+        ...cursorRestPoint(checkoutScene, target),
+      }))
+    );
+  });
+
+  it("times every step as the Scene timeline does, cursor moves by distance", () => {
+    // Moves without durationMs, so they take the hop / glide rule.
+    const spec = {
+      ...checkoutScene,
+      steps: checkoutScene.steps.map((step) =>
+        step.action === "move" ? { ...step, durationMs: undefined } : step
+      ),
+    } as SceneSpec;
+    expect(spec.steps.some((step) => step.action === "move")).toBe(true);
+
+    const compiled = compiledScene(compileSceneToReact(spec));
+    const timeline = buildTimeline(spec, DEFAULT_TOKENS);
+    expect(
+      compiled.steps.map(({ at, durationMs }) => ({ at, durationMs }))
+    ).toEqual(
+      timeline.entries.map(({ startMs, durationMs }) => ({
+        at: startMs,
+        durationMs,
+      }))
+    );
+  });
+
+  it("compiles the checkout scene to the reviewed component", async () => {
+    await expect(compileSceneToReact(checkoutScene)).toMatchFileSnapshot(
+      "./__snapshots__/checkout-scene.tsx.snap"
+    );
+  });
+});

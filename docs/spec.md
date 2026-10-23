@@ -23,14 +23,17 @@ contracts named here.
 | `SceneSpec` types, enums | `packages/ui-animations/src/scene-spec.ts` | done |
 | `DesignTokens`, `DEFAULT_TOKENS` | `packages/ui-animations/src/tokens.ts` | done |
 | Reference scene | `packages/ui-animations/src/fixtures/checkout.ts` | done |
-| `normalizeScene` | `packages/ui-animations/src/normalize.ts` | stub |
-| `validateScene` | `packages/ui-animations/src/validate.ts` | stub |
-| `compileSceneToReact` | `packages/ui-animations/src/compile.ts` | stub |
+| `normalizeScene` | `packages/ui-animations/src/normalize.ts` | done |
+| `validateScene`, `scene` `Rule.custom` | `packages/ui-animations/src/validate.ts`, `sanity.ts` | done |
+| `compileSceneToReact` | `packages/ui-animations/src/compile.ts` | done |
+| `runGeneration` (Agent Actions pipeline) | `packages/ui-animations/src/pipeline.ts` | done (recorded fixtures only) |
+| `pnpm agent:live` | `scripts/agent-actions-live.ts` | done, not yet run (needs schema deploy) |
 | `animation`, `designTokens` schema | `apps/studio/schemaTypes/documents/` | done |
-| Generator input + preview | Studio custom input on `animation` | ticket |
-| Primitive library (React) | `packages/ui-animations` (new `./react` export) | ticket |
-| `/animations/[slug]` | `apps/web` | ticket |
+| Generator input + preview | `apps/studio/components/animation-generator/` | done |
+| Primitive library (React) | `packages/ui-animations/src/react` (`./react` export) | done |
+| `/animations/[slug]`, `/animations` | `apps/web/src/app/animations` | done |
 | `pnpm tokens:sync` | `scripts/tokens-sync.ts`, parser in `packages/ui-animations/src/tokens-parse.ts` | done |
+| Checkout fixtures, pipeline e2e, web e2e, `pnpm seed:checkout` | `packages/ui-animations/src/pipeline.e2e.test.tsx`, `apps/web/tests/e2e/animation-checkout.spec.ts`, `scripts/seed-checkout-animation.ts` | done |
 
 ## User flow
 
@@ -38,9 +41,11 @@ contracts named here.
    a prompt, then picks **Fast** or **Good**. Nothing else is visible: the
    scene, code and log fields stay hidden until **Show advanced fields** is
    ticked.
-2. **Loading.** **Generate** disables the form controls and shows a spinner
-   with "Generating… (call 1 of 1)" for Fast, or "(call 1 of 2)" then
-   "(call 2 of 2)" for Good.
+2. **Loading.** **Generate** (or Cmd/Ctrl+Enter in the prompt) locks the
+   controls and names each call: "Generating the scene… (call 1 of 2)", then
+   "Refining against the design rules… (call 2 of 2)" for Good. **Cancel**
+   stops the run: no further call is made and the answer of the call in
+   flight is dropped, but that call is still billed.
 3. **Preview.** The normalised scene renders live under the prompt, through
    the same primitive library the website uses. Validation issues are listed
    beside it.
@@ -260,6 +265,9 @@ animations.
   autosave. The button stays disabled while a run is in flight.
 - `noWrite` with a single patch per call means a failed or abandoned run
   writes nothing.
+- Animations open on a full-width **Generate** view (`AnimationView`, the
+  default view from `defaultDocumentNode` in `apps/studio/structure.ts`);
+  the **Fields** view is the form, with the same controls under the prompt.
 
 ## Open questions for Jono
 
@@ -278,6 +286,80 @@ animations.
    the example or shorten the token projection.
 7. **Publishing reactCode.** Should the compiled code be exposed on the website
    (copy button), or kept Studio-only?
+
+- **Assumption (confirm with Jono):** Primitives lay out a window's elements
+  themselves (44px title bar, 16px padding, 8px gaps; rows and buttons 40px,
+  cards 64px), so the spec only places windows. Content past the window's
+  height is clipped.
+- **Assumption (confirm with Jono):** A step without `durationMs` takes its
+  role's longest duration; `sweep` takes 1000ms; a cursor `move` between the
+  hop and full-glide distances scales linearly from `hopMs` to the glide max.
+- **Assumption (confirm with Jono):** Intro scenes play once on mount (not on
+  scroll into view). Ambient scenes hold their final state 2s, fade out over
+  400ms and loop.
+- **Assumption (confirm with Jono):** Only `click` steps click. The renderer
+  ignores `CursorTarget.click`, which would click a second time in scenes
+  like the checkout fixture that carry both. The release eases on the press
+  curve, because CSS and WAAPI cannot run the `pop` spring.
+- **Assumption (confirm with Jono):** a cursor glide between 60px and 240px
+  rises linearly from 400ms to the glide's 1200ms floor. `normalizeScene`
+  measures travel from the window centre or an even split of its content
+  area, since layout belongs to the renderer; `validateScene` accepts any
+  glide from 400ms to 1750ms.
+- **Assumption (confirm with Jono):** the Studio validates the stored `scene`
+  as it is, not a normalised copy, so a mistyped id shows as an error instead
+  of the step being silently dropped. Studio validation uses `DEFAULT_TOKENS`
+  until the tokens ticket merges the `designTokens` document over them.
+- **Assumption (confirm with Jono):** duplicate ids are left for validation to
+  report rather than renamed, and an animation with no scene can't be
+  published. Step and window counts outside the brief (6 to 14 steps, one to
+  three windows) are warnings, not errors.
+- **Assumption (confirm with Jono):** a Good run that fails on call 2 keeps
+  call 1's normalised scene. Call 1 has to be written so the refine call can
+  read `$scene`, and it is a better scene than the old one. "Leaves the
+  previous scene in place" is read as "the last scene written".
+- **Assumption (confirm with Jono):** each call writes `scene` and `reactCode`
+  in one patch, and the `generationLog` entry goes in its own patch at the end
+  of every run. A failed run therefore still writes its log entry.
+- **Assumption (confirm with Jono):** when there is no draft, the run copies
+  the published animation into `drafts.<id>` with `createIfNotExists`, as the
+  Studio does on first edit.
+- **Assumption (confirm with Jono):** `compileSceneToReact` bakes the theme
+  colours and the Scene renderer's layout (`react/layout.ts`: 44px title bar,
+  40px rows and buttons, 64px cards, cursor rest points) and timing into the
+  output, so the copied code draws what the Preview tab draws. The emitted component needs only React, until
+  the primitive library can be published for it to import.
+- **Assumption (confirm with Jono):** `reactCode` stays Studio-only. The web
+  queries never select it and the site renders no code, so question 7 is
+  answered "Studio-only" until Jono says otherwise.
+- **Assumption (confirm with Jono):** `/animations` serves published documents
+  only, even in draft mode or Presentation; the Studio preview covers drafts.
+  A published scene that now fails `validateScene` keeps its page and title
+  but shows a neutral "isn't available" line in place of the scene, and logs
+  the issues server-side. Only documents with a slug and a scene are routed
+  (anything else 404s), and the index lists them by title. The site uses `DEFAULT_TOKENS` until the
+  tokens ticket supplies the `designTokens` merge.
+- **Assumption (confirm with Jono):** `pnpm seed:checkout` publishes the
+  reference checkout scene as `animation-checkout` at
+  `/animations/checkout-flow`, with `reactCode` compiled from it, so the web
+  e2e can prove compiled code never reaches the page. It writes only to the
+  `development` dataset, and refuses if another published animation already
+  owns the slug. The web spec skips,
+  rather than fails, against a dataset that was never seeded.
+- **Assumption (confirm with Jono):** anyone who can edit an animation can
+  generate. The Studio already makes the form read-only for users without
+  update access, and that disables Generate; there is no extra role check.
+- **Assumption (confirm with Jono):** Generate sits under the Mode radio
+  (directly below the prompt) and stays disabled until the prompt has text.
+  A run makes every field read-only, not only the generator's own controls.
+- **Assumption (confirm with Jono):** the Studio preview renders a normalised
+  copy of the stored scene, so a half-edited scene still draws, while the
+  issues beside it come from `validateScene` on the stored value, matching
+  the field's validation.
+- **Assumption (confirm with Jono):** the optional Code preview tab loads
+  Babel standalone (unpkg) and React 19.2 (esm.sh) into its sandboxed frame,
+  so it needs network access to those CDNs. The frame mounts only while the
+  tab is open.
 - **Assumption (confirm with Jono):** `tokens:sync` parses only the Roles,
   Springs and Scene tokens tables and the Badges bullet. `tide`,
   `windowChrome` and the traffic-light greys are written from

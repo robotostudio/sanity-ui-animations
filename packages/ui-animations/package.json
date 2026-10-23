@@ -13,7 +13,14 @@
   },
   "devDependencies": {
     "@sanity-ui-animations/typescript-config": "workspace:*",
+    "@sanity/client": "catalog:",
+    "@testing-library/react": "^16.3.3",
     "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "jsdom": "^29.1.1",
+    "react": "catalog:",
+    "react-dom": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
@@ -22,6 +29,11 @@
     "./scene-spec": "./src/scene-spec.ts",
     "./tokens": "./src/tokens.ts",
     "./fixtures/*": "./src/fixtures/*.ts",
-    "./tokens-parse": "./src/tokens-parse.ts"
+    "./tokens-parse": "./src/tokens-parse.ts",
+    "./react": "./src/react/index.ts"
+  },
+  "peerDependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
   }
 }
