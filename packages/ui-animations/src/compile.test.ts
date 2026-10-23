@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 
 import { compileSceneToReact } from "./compile";
 import { checkoutScene } from "./fixtures/checkout";
+import { elementRects } from "./react/layout";
+import { buildTimeline } from "./react/timeline";
 import type { SceneSpec } from "./scene-spec";
 import { DEFAULT_TOKENS } from "./tokens";
 
@@ -38,6 +40,24 @@ function syntaxErrors(code: string): string[] {
   return (out.diagnostics ?? []).map((d) =>
     ts.flattenDiagnosticMessageText(d.messageText, "\n")
   );
+}
+
+type CompiledScene = {
+  windows: {
+    id: string;
+    x: number;
+    y: number;
+    elements: { id: string; x: number; y: number; w: number; h: number }[];
+  }[];
+  steps: { key: string; at: number; durationMs: number }[];
+};
+
+/** The scene data the compiled component reads, as plain JSON. */
+function compiledScene(code: string): CompiledScene {
+  const start = code.indexOf("const SCENE: Scene = ") + 21;
+  const end = code.indexOf(";\n", start);
+  // literal() emits JSON with trailing commas.
+  return JSON.parse(code.slice(start, end).replace(/,(\s*[}\]])/g, "$1"));
 }
 
 /** Every string literal value in the program, decoded. */
@@ -162,6 +182,45 @@ describe("compileSceneToReact", () => {
 
     expect(compileSceneToReact(shuffled)).toBe(
       compileSceneToReact(checkoutScene)
+    );
+  });
+
+  it("lays out elements where the Scene renderer does", () => {
+    const compiled = compiledScene(compileSceneToReact(checkoutScene));
+    for (const sceneWindow of checkoutScene.windows) {
+      const rects = elementRects(sceneWindow);
+      const out = compiled.windows.find((w) => w.id === sceneWindow.id);
+      for (const element of out?.elements ?? []) {
+        const rect = rects.get(element.id);
+        expect({
+          x: out!.x + element.x,
+          y: out!.y + element.y,
+          w: element.w,
+          h: element.h,
+        }).toEqual(rect);
+      }
+    }
+  });
+
+  it("times every step as the Scene timeline does, cursor moves by distance", () => {
+    // Moves without durationMs, so they take the hop / glide rule.
+    const spec = {
+      ...checkoutScene,
+      steps: checkoutScene.steps.map((step) =>
+        step.action === "move" ? { ...step, durationMs: undefined } : step
+      ),
+    } as SceneSpec;
+    expect(spec.steps.some((step) => step.action === "move")).toBe(true);
+
+    const compiled = compiledScene(compileSceneToReact(spec));
+    const timeline = buildTimeline(spec, DEFAULT_TOKENS);
+    expect(
+      compiled.steps.map(({ at, durationMs }) => ({ at, durationMs }))
+    ).toEqual(
+      timeline.entries.map(({ startMs, durationMs }) => ({
+        at: startMs,
+        durationMs,
+      }))
     );
   });
 

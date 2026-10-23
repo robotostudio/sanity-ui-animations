@@ -29,7 +29,7 @@ export function findRole(
 }
 
 /** Cursor travel time by distance (motion.md's hop / glide rule). */
-function glideMs(tokens: DesignTokens, from: Point, to: Point): number {
+export function glideMs(tokens: DesignTokens, from: Point, to: Point): number {
   const { hopDistancePx, hopMs, fullGlideDistancePx } =
     tokens.choreography.cursor;
   const fullMs = findRole(tokens, "glide")?.duration?.maxMs ?? hopMs;
