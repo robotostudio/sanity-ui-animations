@@ -63,14 +63,6 @@ export {
   type WindowChromeTokens,
 } from "./tokens";
 export {
-  type DesignTokensDocument,
-  type DesignTokensRaw,
-  type ParsedTokens,
-  parseDesignTokens,
-  type TokenSources,
-  toDesignTokensDocument,
-} from "./tokens-parse";
-export {
   type ScenePathSegment,
   VALIDATION_CODES,
   type ValidationCode,
