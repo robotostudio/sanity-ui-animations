@@ -1,5 +1,4 @@
-import { normalizeScene } from "./normalize";
-import type { SceneSpec, SceneSpecDraft } from "./scene-spec";
+import type { SceneSpec } from "./scene-spec";
 import { DEFAULT_TOKENS, type DesignTokens } from "./tokens";
 import {
   type ScenePathSegment,
@@ -40,16 +39,4 @@ export function sceneValidation(
     .filter((issue) => issue.severity === severity)
     .map(({ message, path }) => ({ message, path }));
   return markers.length > 0 ? markers : true;
-}
-
-/**
- * The `client.patch(id).set(…)` payload that writes a raw Agent Actions
- * draft into `animation.scene`, normalised. Every write of a generated scene
- * goes through here, so editors never see raw output.
- */
-export function toScenePatch(
-  draft: SceneSpecDraft,
-  tokens: DesignTokens = DEFAULT_TOKENS
-): { scene: SceneSpec } {
-  return { scene: normalizeScene(draft, tokens) };
 }

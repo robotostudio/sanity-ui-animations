@@ -24,7 +24,7 @@ contracts named here.
 | `DesignTokens`, `DEFAULT_TOKENS` | `packages/ui-animations/src/tokens.ts` | done |
 | Reference scene | `packages/ui-animations/src/fixtures/checkout.ts` | done |
 | `normalizeScene` | `packages/ui-animations/src/normalize.ts` | done |
-| `validateScene`, `scene` `Rule.custom`, `toScenePatch` | `packages/ui-animations/src/validate.ts`, `sanity.ts` | done |
+| `validateScene`, `scene` `Rule.custom` | `packages/ui-animations/src/validate.ts`, `sanity.ts` | done |
 | `compileSceneToReact` | `packages/ui-animations/src/compile.ts` | done |
 | `runGeneration` (Agent Actions pipeline) | `packages/ui-animations/src/pipeline.ts` | done (recorded fixtures only) |
 | `pnpm agent:live` | `scripts/agent-actions-live.ts` | done, not yet run (needs schema deploy) |

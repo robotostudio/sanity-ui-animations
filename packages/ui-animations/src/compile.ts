@@ -1,3 +1,10 @@
+import {
+  cursorDestination,
+  cursorStart,
+  LAYOUT,
+  type Point,
+} from "./react/layout";
+import { glideMs, SWEEP_FALLBACK_MS } from "./react/timeline";
 import type { SceneSpec, SceneStep } from "./scene-spec";
 import { DEFAULT_TOKENS, type DesignTokens } from "./tokens";
 
@@ -93,19 +100,6 @@ const num = (value: unknown, fallback = 0): number =>
 const list = <T>(value: readonly T[] | undefined): readonly T[] =>
   Array.isArray(value) ? value : [];
 
-/** Title bar height and element box metrics, design px. */
-const LAYOUT = {
-  titleBarPx: 52,
-  paddingPx: 16,
-  gapPx: 8,
-  heightPx: { row: 44, card: 64, button: 40 },
-} as const;
-
-/** Duration used for `sweep`, whose role has no range. */
-const SWEEP_FALLBACK_MS = 900;
-
-type Point = { x: number; y: number };
-
 function badgeData(badge: unknown): Data {
   if (!badge || typeof badge !== "object") {
     return null;
@@ -121,13 +115,15 @@ function sceneData(spec: SceneSpec, tokens: DesignTokens) {
     const x = num(window.x);
     const y = num(window.y);
     const w = num(window.w);
-    let top = LAYOUT.titleBarPx;
+    // The Scene renderer's geometry (react/layout.ts), so the copied code
+    // draws what the Preview tab draws.
+    let top = LAYOUT.titleBarPx + LAYOUT.paddingPx;
     const elements = list(window.elements).map((element) => {
       const kind = str(element.kind);
       const h =
         kind === "card" || kind === "button"
-          ? LAYOUT.heightPx[kind]
-          : LAYOUT.heightPx.row;
+          ? LAYOUT.elementHeightPx[kind]
+          : LAYOUT.elementHeightPx.row;
       const box = {
         x: LAYOUT.paddingPx,
         y: top,
@@ -189,9 +185,18 @@ function sceneData(spec: SceneSpec, tokens: DesignTokens) {
   });
 
   let clock = 0;
+  // The Scene renderer's cursor path, for its distance-timed moves. The spec
+  // should be valid here, but a malformed one only loses that timing.
+  let cursorAt = guarded(() => cursorStart(spec)) ?? { x: 0, y: 0 };
   const steps = list(spec.steps).map((step) => {
     const at = clock + Math.max(0, num(step.delayMs));
-    const durationMs = stepDuration(step, tokens);
+    const destination = guarded(() =>
+      cursorDestination(spec, str(step.target))
+    );
+    const durationMs = stepDuration(step, tokens, cursorAt, destination);
+    if (destination && (step.action === "move" || step.action === "click")) {
+      cursorAt = destination;
+    }
     clock = at + durationMs;
     return {
       key: str(step._key),
@@ -249,11 +254,33 @@ function sceneData(spec: SceneSpec, tokens: DesignTokens) {
   };
 }
 
-function stepDuration(step: SceneStep, tokens: DesignTokens): number {
+/**
+ * The step's duration as react/timeline.ts's buildTimeline sets it, so the
+ * compiled component keeps the Preview's timing: a `move` with no
+ * `durationMs` takes the hop / glide distance rule, not the glide maximum.
+ */
+function stepDuration(
+  step: SceneStep,
+  tokens: DesignTokens,
+  from: Point,
+  destination: Point | undefined
+): number {
   if (typeof step.durationMs === "number" && Number.isFinite(step.durationMs)) {
     return Math.max(0, step.durationMs);
   }
+  if (step.action === "move" && destination) {
+    return glideMs(tokens, from, destination);
+  }
   return roleOf(tokens, step.role)?.duration?.maxMs ?? SWEEP_FALLBACK_MS;
+}
+
+/** `read()`, or undefined if it throws on a malformed spec. */
+function guarded<T>(read: () => T): T | undefined {
+  try {
+    return read();
+  } catch {
+    return;
+  }
 }
 
 /** A role's token, or undefined when the tokens (or the step) lack it. */

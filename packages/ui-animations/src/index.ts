@@ -14,11 +14,7 @@ export {
   type RunGenerationOptions,
   runGeneration,
 } from "./pipeline";
-export {
-  type SceneValidationMarker,
-  sceneValidation,
-  toScenePatch,
-} from "./sanity";
+export { type SceneValidationMarker, sceneValidation } from "./sanity";
 export {
   BADGE_STATUSES,
   type BadgeStatus,

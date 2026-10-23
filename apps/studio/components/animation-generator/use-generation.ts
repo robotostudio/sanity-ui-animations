@@ -3,7 +3,7 @@ import {
   type GenerationMode,
   runGeneration,
 } from "@sanity-ui-animations/ui-animations";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 import type { SanityClient } from "sanity";
 
 /** Deployed schema id; unset falls back to the pipeline's default. */
@@ -61,27 +61,106 @@ export type Generation = {
 };
 
 /**
- * One generation run at a time, with progress, errors and cancel. Each run
- * is one `runGeneration` call, so its usage and budget handling are the
- * pipeline's. See docs/spec.md, "User flow" and "Cost controls".
+ * A document's run, shared by every view of it: the Generate view and the
+ * Fields view each call `useGeneration`, and a run started in one must lock
+ * the other and survive switching between them.
+ */
+type DocumentRun = {
+  state: GenerationState;
+  controller: AbortController | null;
+  listeners: Set<() => void>;
+};
+
+const IDLE: GenerationState = { status: "idle" };
+const runs = new Map<string, DocumentRun>();
+
+function documentRun(documentId: string): DocumentRun {
+  let entry = runs.get(documentId);
+  if (!entry) {
+    entry = { state: IDLE, controller: null, listeners: new Set() };
+    runs.set(documentId, entry);
+  }
+  return entry;
+}
+
+function setRunState(
+  documentId: string,
+  next: GenerationState | ((previous: GenerationState) => GenerationState)
+) {
+  const entry = documentRun(documentId);
+  entry.state = typeof next === "function" ? next(entry.state) : next;
+  for (const listener of entry.listeners) {
+    listener();
+  }
+}
+
+/** Forget a document once no view shows it and no run is in flight. */
+function release(documentId: string) {
+  const entry = runs.get(documentId);
+  if (entry && entry.listeners.size === 0 && !entry.controller) {
+    runs.delete(documentId);
+  }
+}
+
+/**
+ * One generation run at a time per document, across all its views, with
+ * progress, errors and cancel. Each run is one `runGeneration` call, so its
+ * usage and budget handling are the pipeline's. See docs/spec.md, "User
+ * flow" and "Cost controls".
  */
 export function useGeneration({
   client,
   documentId,
   onRunningChange,
 }: UseGenerationOptions): Generation {
-  const [state, setState] = useState<GenerationState>({ status: "idle" });
-  const controller = useRef<AbortController | null>(null);
+  const subscribe = useCallback(
+    (listener: () => void) => {
+      const entry = documentRun(documentId);
+      entry.listeners.add(listener);
+      return () => {
+        entry.listeners.delete(listener);
+        release(documentId);
+      };
+    },
+    [documentId]
+  );
+  const state = useSyncExternalStore(
+    subscribe,
+    () => runs.get(documentId)?.state ?? IDLE,
+    () => IDLE
+  );
+  const running = state.status === "running";
+
+  // Lock this view's form for a run any view of the document started.
+  const onRunningChangeRef = useRef(onRunningChange);
+  onRunningChangeRef.current = onRunningChange;
+  const reported = useRef(false);
+  useEffect(() => {
+    if (running !== reported.current) {
+      reported.current = running;
+      onRunningChangeRef.current?.(running);
+    }
+  }, [running]);
+  useEffect(
+    () => () => {
+      if (reported.current) {
+        reported.current = false;
+        onRunningChangeRef.current?.(false);
+      }
+    },
+    []
+  );
 
   const generate = useCallback(
     async (request: GenerationRequest) => {
-      if (controller.current) {
+      const entry = documentRun(documentId);
+      if (entry.controller) {
         return;
       }
       const current = new AbortController();
-      controller.current = current;
+      entry.controller = current;
       const startedAt = Date.now();
-      setState({
+      setRunState(documentId, {
         status: "running",
         request,
         call: 1,
@@ -89,7 +168,6 @@ export function useGeneration({
         startedAt,
         cancelling: false,
       });
-      onRunningChange?.(true);
       try {
         const result = await runGeneration({
           client,
@@ -99,23 +177,23 @@ export function useGeneration({
           schemaId,
           signal: current.signal,
           onProgress: ({ call, totalCalls }) =>
-            setState((previous) =>
+            setRunState(documentId, (previous) =>
               previous.status === "running"
                 ? { ...previous, call, totalCalls }
                 : previous
             ),
         });
         if (result.status === "success") {
-          setState({
+          setRunState(documentId, {
             status: "success",
             request,
             calls: result.calls,
             durationMs: Date.now() - startedAt,
           });
         } else if (result.cancelled) {
-          setState({ status: "cancelled", request });
+          setRunState(documentId, { status: "cancelled", request });
         } else {
-          setState({
+          setRunState(documentId, {
             status: "error",
             request,
             message: result.error,
@@ -124,28 +202,28 @@ export function useGeneration({
         }
       } catch (error) {
         // The pipeline resolves its own failures; this is a bug or a lost tab.
-        setState({
+        setRunState(documentId, {
           status: "error",
           request,
           message: error instanceof Error ? error.message : "Generation failed",
           budgetExhausted: false,
         });
       } finally {
-        controller.current = null;
-        onRunningChange?.(false);
+        entry.controller = null;
+        release(documentId);
       }
     },
-    [client, documentId, onRunningChange]
+    [client, documentId]
   );
 
   const cancel = useCallback(() => {
-    controller.current?.abort();
-    setState((previous) =>
+    runs.get(documentId)?.controller?.abort();
+    setRunState(documentId, (previous) =>
       previous.status === "running"
         ? { ...previous, cancelling: true }
         : previous
     );
-  }, []);
+  }, [documentId]);
 
   const retry = useCallback(() => {
     if (state.status === "error" || state.status === "cancelled") {
@@ -153,13 +231,7 @@ export function useGeneration({
     }
   }, [generate, state]);
 
-  return {
-    state,
-    running: state.status === "running",
-    generate,
-    retry,
-    cancel,
-  };
+  return { state, running, generate, retry, cancel };
 }
 
 export type RunningState = Extract<GenerationState, { status: "running" }>;
